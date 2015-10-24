@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NodeKey<N, V> extends Key<N, V> {
-    private List<Key<N,V>> children = new ArrayList<Key<N, V>>();
+    private final List<Key<N,V>> children;
 
     public NodeKey(N name, Class type, Class container, List<Key<N, V>> children) {
         super(name, type, container);

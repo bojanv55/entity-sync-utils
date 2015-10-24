@@ -1,9 +1,9 @@
 package me.vukas.core.utils.entity.key;
 
 public abstract class Key<N, V> {
-    private N name;
-    private Class type;
-    private Class container;
+    private final N name;
+    private final Class type;
+    private final Class container;
 
     public Key(N name, Class type, Class container) {
         this.name = name;

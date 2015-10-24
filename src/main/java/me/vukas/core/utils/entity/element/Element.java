@@ -3,9 +3,9 @@ package me.vukas.core.utils.entity.element;
 import me.vukas.core.utils.entity.key.Key;
 
 public abstract class Element<N, V> {
-    private N name;
+    private final N name;
     private Status status;
-    private Key<N, V> key;
+    private final Key<N, V> key;
 
     public Element(N name, Status status, Key<N, V> key) {
         this.name = name;

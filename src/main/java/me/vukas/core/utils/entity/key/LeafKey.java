@@ -1,7 +1,7 @@
 package me.vukas.core.utils.entity.key;
 
 public class LeafKey<N, V> extends Key<N, V> {
-    private V value;
+    private final V value;
 
     public LeafKey(N name, Class type, Class container, V value) {
         super(name, type, container);
