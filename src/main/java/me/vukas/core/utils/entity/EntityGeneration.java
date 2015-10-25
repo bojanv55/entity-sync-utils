@@ -11,7 +11,8 @@ public abstract class EntityGeneration<T> extends EntityComparison<T> {
         return this.diff;
     }
 
-    protected void setDiff(Diff diff){
+    public void setDiff(Diff diff){
+        assert this.diff == null : "Diff field can be set only once";
         this.diff = diff;
     }
 

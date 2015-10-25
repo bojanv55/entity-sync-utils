@@ -21,7 +21,8 @@ public abstract class EntityComparison<T> {
         return compare;
     }
 
-    protected void setCompare(Compare compare){
+    public void setCompare(Compare compare){
+        assert this.compare == null : "Compare field can be set only once";
         this.compare = compare;
     }
 

@@ -1,9 +1,13 @@
 package me.vukas.core.utils.entity.operation;
 
+import me.vukas.core.utils.entity.EntityComparison;
 import me.vukas.core.utils.entity.EntityDefinition;
 import me.vukas.core.utils.entity.EntityGeneration;
 import me.vukas.core.utils.entity.element.Element;
 import me.vukas.core.utils.entity.element.LeafElement;
+import me.vukas.core.utils.entity.generation.collection.CollectionEntityGeneration;
+import me.vukas.core.utils.entity.generation.map.MapEntityGeneration;
+import me.vukas.core.utils.entity.generation.map.MapEntryEntityGeneration;
 import me.vukas.core.utils.entity.key.Key;
 import me.vukas.core.utils.entity.key.LeafKey;
 
@@ -16,13 +20,17 @@ public class Diff {
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final List<EntityGeneration> entityGenerations;
 
+    @SuppressWarnings("unchecked")
     private Diff(Builder builder){
         this.typesToEntityDefinitions = builder.typesToEntityDefinitions;
         this.entityGenerations = builder.entityGenerations;
 
         for(EntityGeneration entityGeneration : this.entityGenerations){
-
+            entityGeneration.setDiff(this);
         }
+
+        this.compare = new Compare.Builder(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()),
+                (List<EntityComparison>)(List<?>)this.entityGenerations).build();
     }
 
     public <T> Element diff(T original, T revised) {
@@ -35,6 +43,7 @@ public class Diff {
         if (original == revised) {
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
+
         if (original == null || revised == null) {
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
         }
@@ -88,7 +97,9 @@ public class Diff {
         }
 
         private void registerInternalEntityGenerations(){
-
+            this.registerEntityGeneration(new CollectionEntityGeneration());
+            this.registerEntityGeneration(new MapEntityGeneration());
+            this.registerEntityGeneration(new MapEntryEntityGeneration());
         }
 
         public Diff build(){

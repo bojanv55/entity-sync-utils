@@ -19,22 +19,23 @@ public class EntityDefinition {
         return this.type;
     }
 
-    public List<Field> getFields() {
+    public List<Field> getFields(){
+        try{
+            return this.getFieldsFromClassHierarchy();
+        }
+        catch (NoSuchFieldException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Field> getFieldsFromClassHierarchy() throws NoSuchFieldException {
         List<Field> fields = new ArrayList<Field>();
         for (Map.Entry<Class, String[]> entry : this.typesToProperties.entrySet()) {
             for (String fieldName : entry.getValue()) {
-                fields.add(this.getDeclaredField(entry.getKey(), fieldName));
+                fields.add(entry.getKey().getDeclaredField(fieldName));
             }
         }
         return fields;
-    }
-
-    private Field getDeclaredField(Class type, String fieldName) {
-        try {
-            return type.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException exception) {
-            throw new RuntimeException(String.format("Unknown field '%s' in type '%s'", fieldName, type.getName()));
-        }
     }
 
     public EntityDefinition registerSuperclass(Class type, String... properties) {
