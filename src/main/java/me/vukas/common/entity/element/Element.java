@@ -29,10 +29,6 @@ public abstract class Element<N, V> {
         return key;
     }
 
-    public enum Name{
-        ROOT
-    }
-
     public enum Status{
         EQUAL,
         EQUAL_MOVED,

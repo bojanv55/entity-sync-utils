@@ -22,6 +22,10 @@ public class Compare {
         }
     }
 
+    public <T> boolean compare(T entity1, T entity2){
+        return false;
+    }
+
     public static class Builder{
         private final Map<Class, EntityDefinition> typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
         private final List<EntityComparison> entityComparisons = new ArrayList<EntityComparison>();
