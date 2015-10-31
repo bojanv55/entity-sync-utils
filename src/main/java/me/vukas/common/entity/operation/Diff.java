@@ -13,6 +13,10 @@ import me.vukas.common.entity.key.LeafKey;
 
 import java.util.*;
 
+import static me.vukas.common.base.Arrays.wrap;
+import static me.vukas.common.base.Objects.getWrappedClass;
+import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
+
 public class Diff {
     private Compare compare;
     private final Stack<Object> visitedElements = new Stack<Object>();
@@ -46,6 +50,32 @@ public class Diff {
 
         if (original == null || revised == null) {
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
+        }
+
+        if(!getWrappedClass(fieldType).equals(revised.getClass())){
+            throw new UnsupportedOperationException("Diff objects must have the same type");
+        }
+
+        if(isStringOrPrimitiveOrWrapped(fieldType)){
+            if(original.equals(revised)){
+                return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
+            }
+            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
+        }
+
+        if(this.visitedElements.contains(original)){
+            return null;    //TODO: should we return null or something else on circular reference
+        }
+
+        this.visitedElements.push(original);
+
+        if(fieldType.isArray()){
+            List<Element<N, T>> elements = new ArrayList<Element<N, T>>();
+
+            Object[] originalArray = wrap(original);
+            Object[] revisedArray = wrap(revised);
+
+            Set<Integer> matchedIndexes = new HashSet<Integer>();
         }
 
         return null;
