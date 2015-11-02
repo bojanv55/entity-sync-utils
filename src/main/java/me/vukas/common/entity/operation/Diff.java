@@ -6,15 +6,18 @@ import me.vukas.common.entity.EntityGeneration;
 import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
+import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.collection.CollectionEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.key.LeafKey;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static me.vukas.common.base.Arrays.wrap;
+import static me.vukas.common.base.Objects.getAllFields;
 import static me.vukas.common.base.Objects.getWrappedClass;
 import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
 
@@ -80,12 +83,12 @@ public class Diff {
 
             ORIGINAL_ARRAY:
             for (int i = 0; i < originalArray.length; i++) {
+                Class elementType = originalArray[i] == null ? null : originalArray[i].getClass();
+                Key<Integer, Object> elementKey = this.generateKey(i, elementType, fieldType, originalArray[i]);
                 for (int j = 0; j < revisedArray.length; j++) {
                     if (!matchedIndexes.contains(j) && this.compare.compare(originalArray[i], revisedArray[j])) {
                         matchedIndexes.add(j);
-                        Class matchedElementType = originalArray[i] == null ? null : originalArray[i].getClass();
-                        Key<Integer, Object> matchedElementKey = this.generateKey(i, matchedElementType, fieldType, originalArray[i]);
-                        Element<Integer, Object> element = this.diff(originalArray[i], revisedArray[j], j, matchedElementType, fieldType, matchedElementKey);
+                        Element<Integer, Object> element = this.diff(originalArray[i], revisedArray[j], j, elementType, fieldType, elementKey);
                         if (i != j) {
                             if (element.getStatus() == Element.Status.EQUAL) {
                                 element.setStatus(Element.Status.EQUAL_MOVED);
@@ -97,13 +100,52 @@ public class Diff {
                         continue ORIGINAL_ARRAY;
                     }
                 }
-                Class matchedElementType = originalArray[i] == null ? null : originalArray[i].getClass();
-                Key<Integer, Object> matchedElementKey = this.generateKey(i, matchedElementType, fieldType, originalArray[i]);
-                elements.add(new LeafElement<Integer, Object>(i, Element.Status.DELETED, matchedElementKey, null));
+                elements.add(new LeafElement<Integer, Object>(i, Element.Status.DELETED, elementKey, null));
+            }
+
+            for (int j = 0; j < revisedArray.length; j++) {
+                if (!matchedIndexes.contains(j)) {
+                    elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, revisedArray[j]));
+                }
+            }
+
+            Element.Status status = this.determineElementStatus(elements);
+
+            this.visitedElements.pop();
+            Key<N, T> arrayKey = this.generateKey(elementName, fieldType, containerType, original);
+            return new NodeElement<N, T>(elementName, status, arrayKey, elements);
+        }
+
+        for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
+            if (entityGeneration.getType().isAssignableFrom(fieldType)) {
+                Element<N, ?> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
+                this.visitedElements.pop();
+                return element;
             }
         }
 
-        return null;
+        List<Element> elements = new ArrayList<Element>();
+        List<Field> fields = getAllFields(fieldType);
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), field.get(original));
+            Element element = this.diff(field.get(original), field.get(revised), field.getName(), field.getType(), field.getDeclaringClass(), fieldKey);
+            elements.add(element);
+        }
+
+        Element.Status status = this.determineElementStatus(elements);
+
+        this.visitedElements.pop();
+        return new NodeElement<N, T>(elementName, status, key, elements);
+    }
+
+    private Element.Status determineElementStatus(List<Element> children) {
+        for (Element element : children) {
+            if (element.getStatus() != Element.Status.EQUAL) {
+                return Element.Status.MODIFIED;
+            }
+        }
+        return Element.Status.EQUAL;
     }
 
     private <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
