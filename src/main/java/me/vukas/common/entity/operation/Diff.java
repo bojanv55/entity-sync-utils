@@ -1,5 +1,6 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.base.Objects;
 import me.vukas.common.entity.EntityComparison;
 import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.EntityGeneration;
@@ -109,16 +110,16 @@ public class Diff {
                 }
             }
 
-            Element.Status status = this.determineElementStatus(elements);
+            Element.Status status = determineElementStatus(elements);
 
             this.visitedElements.pop();
             Key<N, T> arrayKey = this.generateKey(elementName, fieldType, containerType, original);
-            return new NodeElement<N, T>(elementName, status, arrayKey, elements);
+            return new NodeElement<N, T, Integer, Object>(elementName, status, arrayKey, elements);
         }
 
         for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
             if (entityGeneration.getType().isAssignableFrom(fieldType)) {
-                Element<N, ?> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
+                Element<?, ?> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
                 this.visitedElements.pop();
                 return element;
             }
@@ -133,14 +134,14 @@ public class Diff {
             elements.add(element);
         }
 
-        Element.Status status = this.determineElementStatus(elements);
+        Element.Status status = determineElementStatus(elements);
 
         this.visitedElements.pop();
         return new NodeElement<N, T>(elementName, status, key, elements);
     }
 
-    private Element.Status determineElementStatus(List<Element> children) {
-        for (Element element : children) {
+    private static <N, V> Element.Status determineElementStatus(List<Element<N, V>> children) {
+        for (Element<N, V> element : children) {
             if (element.getStatus() != Element.Status.EQUAL) {
                 return Element.Status.MODIFIED;
             }
