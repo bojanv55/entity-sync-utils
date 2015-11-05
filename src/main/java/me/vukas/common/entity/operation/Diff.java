@@ -1,6 +1,5 @@
 package me.vukas.common.entity.operation;
 
-import me.vukas.common.base.Objects;
 import me.vukas.common.entity.EntityComparison;
 import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.EntityGeneration;
@@ -18,16 +17,14 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import static me.vukas.common.base.Arrays.wrap;
-import static me.vukas.common.base.Objects.getAllFields;
-import static me.vukas.common.base.Objects.getWrappedClass;
-import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
+import static me.vukas.common.base.Objects.*;
 
 public class Diff {
     private Compare compare;
     private final Stack<Object> visitedElements = new Stack<Object>();
     private final Stack<Object> visitedKeys = new Stack<Object>();
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
-    private final List<EntityGeneration> entityGenerations;
+    private final List<EntityGeneration<?>> entityGenerations;
 
     @SuppressWarnings("unchecked")
     private Diff(Builder builder) {
@@ -39,7 +36,7 @@ public class Diff {
         }
 
         this.compare = new Compare.Builder(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()),
-                (List<EntityComparison>) (List<?>) this.entityGenerations).build();
+                (List<EntityComparison<?>>) (List<?>) this.entityGenerations).build();
     }
 
     public <T> Element<Name, T> diff(T original, T revised) {
@@ -75,7 +72,7 @@ public class Diff {
         this.visitedElements.push(original);
 
         if (fieldType.isArray()) {
-            List<Element<Integer, Object>> elements = new ArrayList<Element<Integer, Object>>();
+            List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
 
             Object[] originalArray = wrap(original);
             Object[] revisedArray = wrap(revised);
@@ -114,25 +111,18 @@ public class Diff {
 
             this.visitedElements.pop();
             Key<N, T> arrayKey = this.generateKey(elementName, fieldType, containerType, original);
-            return new NodeElement<N, T, Integer, Object>(elementName, status, arrayKey, elements);
+            return new NodeElement<N, T>(elementName, status, arrayKey, elements);
         }
 
-        for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
+        for (EntityGeneration entityGeneration : this.entityGenerations) {
             if (entityGeneration.getType().isAssignableFrom(fieldType)) {
-                Element<?, ?> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
+                Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
                 this.visitedElements.pop();
                 return element;
             }
         }
 
-        List<Element> elements = new ArrayList<Element>();
-        List<Field> fields = getAllFields(fieldType);
-        for (Field field : fields) {
-            field.setAccessible(true);
-            Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), field.get(original));
-            Element element = this.diff(field.get(original), field.get(revised), field.getName(), field.getType(), field.getDeclaringClass(), fieldKey);
-            elements.add(element);
-        }
+        List<Element<?, ?>> elements = this.processFields(fieldType, original, revised);
 
         Element.Status status = determineElementStatus(elements);
 
@@ -140,8 +130,29 @@ public class Diff {
         return new NodeElement<N, T>(elementName, status, key, elements);
     }
 
-    private static <N, V> Element.Status determineElementStatus(List<Element<N, V>> children) {
-        for (Element<N, V> element : children) {
+    private <T> List<Element<?, ?>> processFields(Class fieldType, T original, T revised){
+        try {
+            return this.processAllClassFields(fieldType, original, revised);
+        }
+        catch (IllegalAccessException e){
+            throw new UnsupportedOperationException(e);
+        }
+    }
+
+    private <T> List<Element<?, ?>> processAllClassFields(Class fieldType, T original, T revised) throws IllegalAccessException{
+        List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
+        List<Field> fields = getAllFields(fieldType);
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), field.get(original));
+            Element element = this.diff(field.get(original), field.get(revised), field.getName(), field.getType(), field.getDeclaringClass(), fieldKey);
+            elements.add(element);
+        }
+        return elements;
+    }
+
+    private static Element.Status determineElementStatus(List<Element<?, ?>> children) {
+        for (Element<?, ?> element : children) {
             if (element.getStatus() != Element.Status.EQUAL) {
                 return Element.Status.MODIFIED;
             }
@@ -158,13 +169,13 @@ public class Diff {
 
     public static class Builder {
         private final Map<Class, EntityDefinition> typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
-        private final List<EntityGeneration> entityGenerations = new ArrayList<EntityGeneration>();
+        private final List<EntityGeneration<?>> entityGenerations = new ArrayList<EntityGeneration<?>>();
 
         public Builder() {
             this.registerInternalEntityGenerations();
         }
 
-        public Builder(List<EntityDefinition> entityDefinitions, List<EntityGeneration> entityGenerations) {
+        public Builder(List<EntityDefinition> entityDefinitions, List<EntityGeneration<?>> entityGenerations) {
             this();
             for (EntityDefinition entityDefinition : entityDefinitions) {
                 this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
@@ -189,7 +200,7 @@ public class Diff {
             return this;
         }
 
-        public Builder registerEntityGenerations(List<EntityGeneration> entityGenerations) {
+        public Builder registerEntityGenerations(List<EntityGeneration<?>> entityGenerations) {
             this.entityGenerations.addAll(entityGenerations);
             return this;
         }
