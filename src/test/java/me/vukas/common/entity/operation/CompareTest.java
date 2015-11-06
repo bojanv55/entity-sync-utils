@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class CompareTest {
     @Test
-    public void comparingNullToNullShouldReturnTrue(){
+    public void comparingNullToNullShouldReturnTrue() {
         return;
     }
 }

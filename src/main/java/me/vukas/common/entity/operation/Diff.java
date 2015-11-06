@@ -114,9 +114,10 @@ public class Diff {
             return new NodeElement<N, T>(elementName, status, arrayKey, elements);
         }
 
-        for (EntityGeneration entityGeneration : this.entityGenerations) {
+        for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
             if (entityGeneration.getType().isAssignableFrom(fieldType)) {
-                Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
+                EntityGeneration<T> dva = (EntityGeneration<T>)entityGeneration;
+                Element<N, T> element = dva.diff(original, revised, elementName, fieldType, containerType, key);
                 this.visitedElements.pop();
                 return element;
             }
@@ -130,16 +131,15 @@ public class Diff {
         return new NodeElement<N, T>(elementName, status, key, elements);
     }
 
-    private <T> List<Element<?, ?>> processFields(Class fieldType, T original, T revised){
+    private <T> List<Element<?, ?>> processFields(Class fieldType, T original, T revised) {
         try {
             return this.processAllClassFields(fieldType, original, revised);
-        }
-        catch (IllegalAccessException e){
+        } catch (IllegalAccessException e) {
             throw new UnsupportedOperationException(e);
         }
     }
 
-    private <T> List<Element<?, ?>> processAllClassFields(Class fieldType, T original, T revised) throws IllegalAccessException{
+    private <T> List<Element<?, ?>> processAllClassFields(Class fieldType, T original, T revised) throws IllegalAccessException {
         List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
         List<Field> fields = getAllFields(fieldType);
         for (Field field : fields) {

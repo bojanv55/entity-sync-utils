@@ -43,50 +43,43 @@ public class Arrays {
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == short.class) {
+            } else if (componentType == short.class) {
                 short[] originalArray = (short[]) array;
                 wrappedArray = new Short[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == int.class) {
+            } else if (componentType == int.class) {
                 int[] originalArray = (int[]) array;
                 wrappedArray = new Integer[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == long.class) {
+            } else if (componentType == long.class) {
                 long[] originalArray = (long[]) array;
                 wrappedArray = new Long[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == float.class) {
+            } else if (componentType == float.class) {
                 float[] originalArray = (float[]) array;
                 wrappedArray = new Float[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == double.class) {
+            } else if (componentType == double.class) {
                 double[] originalArray = (double[]) array;
                 wrappedArray = new Double[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == boolean.class) {
+            } else if (componentType == boolean.class) {
                 boolean[] originalArray = (boolean[]) array;
                 wrappedArray = new Boolean[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {
                     wrappedArray[i] = originalArray[i];
                 }
-            }
-            else if (componentType == char.class) {
+            } else if (componentType == char.class) {
                 char[] originalArray = (char[]) array;
                 wrappedArray = new Character[originalArray.length];
                 for (int i = 0; i < originalArray.length; i++) {

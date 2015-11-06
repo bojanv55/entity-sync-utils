@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class MapEntityGeneration extends EntityGeneration<Map> {
     @Override
-    public <N> Element diff(Map original, Map revised, N elementName, Class fieldType, Class containerType, Key<N, Map> key) {
+    public <N> Element<N, Map> diff(Map original, Map revised, N elementName, Class fieldType, Class containerType, Key<N, Map> key) {
         return null;
     }
 

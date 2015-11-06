@@ -7,15 +7,16 @@ import me.vukas.common.entity.operation.Diff;
 public abstract class EntityGeneration<T> extends EntityComparison<T> {
     private Diff diff;
 
-    public Diff getDiff(){
+    public Diff getDiff() {
         return this.diff;
     }
 
-    public void setDiff(Diff diff){
+    public void setDiff(Diff diff) {
         assert this.diff == null : "Diff field can be set only once";
         this.diff = diff;
     }
 
-    public abstract <N> Element diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key);
+    public abstract <N> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key);
+
     public abstract <N> Key generateKey(N elementName, Class elementType, Class containerType, T value);
 }

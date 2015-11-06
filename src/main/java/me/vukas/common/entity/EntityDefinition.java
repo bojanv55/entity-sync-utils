@@ -19,11 +19,10 @@ public class EntityDefinition {
         return this.type;
     }
 
-    public List<Field> getFields(){
-        try{
+    public List<Field> getFields() {
+        try {
             return this.getFieldsFromClassHierarchy();
-        }
-        catch (NoSuchFieldException e){
+        } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }

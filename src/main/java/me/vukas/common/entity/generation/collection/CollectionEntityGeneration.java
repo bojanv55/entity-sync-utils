@@ -8,7 +8,7 @@ import java.util.Collection;
 
 public class CollectionEntityGeneration extends EntityGeneration<Collection> {
     @Override
-    public <N> Element diff(Collection original, Collection revised, N elementName, Class fieldType, Class containerType, Key<N, Collection> key) {
+    public <N> Element<N, Collection> diff(Collection original, Collection revised, N elementName, Class fieldType, Class containerType, Key<N, Collection> key) {
         return null;
     }
 

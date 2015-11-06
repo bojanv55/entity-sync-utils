@@ -9,8 +9,8 @@ public abstract class EntityComparison<T> {
     private Compare compare;
 
     @SuppressWarnings("unchecked")
-    protected EntityComparison(){
-        this.type = (Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    protected EntityComparison() {
+        this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
     public Class<T> getType() {
@@ -21,7 +21,7 @@ public abstract class EntityComparison<T> {
         return compare;
     }
 
-    public void setCompare(Compare compare){
+    public void setCompare(Compare compare) {
         assert this.compare == null : "Compare field can be set only once";
         this.compare = compare;
     }
