@@ -116,8 +116,8 @@ public class Diff {
 
         for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
             if (entityGeneration.getType().isAssignableFrom(fieldType)) {
-                EntityGeneration<T> dva = (EntityGeneration<T>)entityGeneration;
-                Element<N, T> element = dva.diff(original, revised, elementName, fieldType, containerType, key);
+                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+                Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
                 this.visitedElements.pop();
                 return element;
             }
