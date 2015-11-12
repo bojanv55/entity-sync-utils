@@ -18,5 +18,5 @@ public abstract class EntityGeneration<T> extends EntityComparison<T> {
 
     public abstract <N> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key);
 
-    public abstract <N> Key generateKey(N elementName, Class elementType, Class containerType, T value);
+    public abstract <N> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value);
 }

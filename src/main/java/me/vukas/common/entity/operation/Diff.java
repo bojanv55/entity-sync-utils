@@ -10,8 +10,10 @@ import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.collection.CollectionEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
+import me.vukas.common.entity.key.ArrayNodeKey;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.key.LeafKey;
+import me.vukas.common.entity.key.NodeKey;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -114,7 +116,7 @@ public class Diff {
             return new NodeElement<N, T>(elementName, status, arrayKey, elements);
         }
 
-        for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
+        for (EntityGeneration<?> entityGeneration : this.entityGenerations) { //TODO: class hierarchy priority
             if (entityGeneration.getType().isAssignableFrom(fieldType)) {
                 EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
                 Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
@@ -161,10 +163,59 @@ public class Diff {
     }
 
     private <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
-        if (value == null) {
-            return new LeafKey<N, T>(elementName, elementType, containerType, null);
+        if (value == null || isStringOrPrimitiveOrWrapped(elementType)) {
+            return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
-        return null;
+
+        if(visitedKeys.contains(value)){
+            return null;    //TODO: should we return null or something else on circular reference; Can this even happen?
+        }
+
+        visitedKeys.push(value);
+
+        if(elementType.isArray()){
+            List<Key<?, ?>> keys = new ArrayList<Key<?, ?>>();
+            Object[] originalArray = wrap(value);
+            for(int i=0; i<originalArray.length; i++){
+                Class keyType = originalArray[i] == null ? null : originalArray[i].getClass();
+                keys.add(this.generateKey(i, keyType, elementType, originalArray[i]));
+            }
+            visitedKeys.pop();
+            return new ArrayNodeKey<N, T>(elementName, elementType, containerType, keys, originalArray.length);
+        }
+
+        for(EntityGeneration<?> entityGeneration : this.entityGenerations){
+            if(entityGeneration.getType().isAssignableFrom(elementType)){   //TODO: class hierarchy priority
+                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+                Key<N, T> key = entityGenerationCasted.generateKey(elementName, elementType, containerType, value);
+                visitedKeys.pop();
+                return key;
+            }
+        }
+
+        List<Key<?, ?>> keys = new ArrayList<Key<?, ?>>();
+        List<Field> fields;
+
+        if(this.typesToEntityDefinitions.containsKey(elementType)){
+            fields = this.typesToEntityDefinitions.get(elementType).getFields();
+        }
+        else{
+            fields = getAllFields(elementType);
+        }
+
+        for(Field field : fields){
+            try{
+                field.setAccessible(true);
+                Key<?, ?> key = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), field.get(value));
+                keys.add(key);
+            }
+            catch (IllegalAccessException e){
+                //TODO: remove this catch to separate method
+            }
+        }
+
+        visitedKeys.pop();
+        return new NodeKey<N, T>(elementName, elementType, containerType, keys);
     }
 
     public static class Builder {

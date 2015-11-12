@@ -13,12 +13,12 @@ public class MapEntityGeneration extends EntityGeneration<Map> {
     }
 
     @Override
-    public <N> Key generateKey(N elementName, Class elementType, Class containerType, Map value) {
+    public <N> Key<N, Map> generateKey(N elementName, Class elementType, Class containerType, Map value) {
         return null;
     }
 
     @Override
-    public boolean areEqual(Map entity1, Map entity2, Class fieldType) {
+    public boolean compare(Map entity1, Map entity2, Class fieldType) {
         return false;
     }
 }

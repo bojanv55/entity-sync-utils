@@ -6,7 +6,12 @@ import me.vukas.common.entity.generation.collection.CollectionEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
 
+import java.lang.reflect.Field;
 import java.util.*;
+
+import static me.vukas.common.base.Arrays.wrap;
+import static me.vukas.common.base.Objects.getAllFields;
+import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
 
 public class Compare {
     private final Stack<Object> visitedElements = new Stack<Object>();
@@ -23,7 +28,80 @@ public class Compare {
     }
 
     public <T> boolean compare(T entity1, T entity2) {
-        return false;
+        Class entity1Class = entity1 == null ? null : entity1.getClass();
+        return this.compare(entity1, entity2, entity1Class);
+    }
+
+    private <T> boolean compare(T entity1, T entity2, Class fieldType){ //TODO: remove field type?
+        if(entity1 == entity2){
+            return true;
+        }
+
+        if(entity1 == null || entity2 == null){
+            return false;
+        }
+
+        if(isStringOrPrimitiveOrWrapped(fieldType)){
+            return entity1.equals(entity2);
+        }
+
+        if(visitedElements.contains(entity1)){
+            return true;
+        }
+        visitedElements.push(entity1);
+
+        if(fieldType.isArray()){
+            Object[] entity1Array = wrap(entity1);
+            Object[] entity2Array = wrap(entity2);
+
+            if(entity1Array.length!=entity2Array.length){
+                visitedElements.pop();
+                return false;
+            }
+
+            for(int i=0; i<entity1Array.length; i++){
+                if(!this.compare(entity1Array[i], entity2Array[i])){
+                    visitedElements.pop();
+                    return false;
+                }
+            }
+
+            visitedElements.pop();
+            return true;
+        }
+
+        for(EntityComparison<?> entityComparison : this.entityComparisons){
+            if(entityComparison.getType().isAssignableFrom(fieldType)){ //TODO: class hierarchy priority
+                EntityComparison<T> entityComparisonCasted = (EntityComparison<T>)entityComparison;
+                boolean equals = entityComparisonCasted.compare(entity1, entity2, fieldType);
+                visitedElements.pop();
+                return equals;
+            }
+        }
+
+        List<Field> fields;
+        if(typesToEntityDefinitions.containsKey(fieldType)){
+            fields = typesToEntityDefinitions.get(fieldType).getFields();
+        }
+        else{
+            fields = getAllFields(fieldType);
+        }
+
+        for(Field field : fields){
+            try{
+                field.setAccessible(true);
+                if(!this.compare(field.get(entity1), field.get(entity2))){
+                    visitedElements.pop();
+                    return false;
+                }
+            }
+            catch (IllegalAccessException e){
+                //TODO: remove this exception to separate method
+            }
+        }
+
+        visitedElements.pop();
+        return true;
     }
 
     public static class Builder {

@@ -13,12 +13,12 @@ public class CollectionEntityGeneration extends EntityGeneration<Collection> {
     }
 
     @Override
-    public <N> Key generateKey(N elementName, Class elementType, Class containerType, Collection value) {
+    public <N> Key<N, Collection> generateKey(N elementName, Class elementType, Class containerType, Collection value) {
         return null;
     }
 
     @Override
-    public boolean areEqual(Collection entity1, Collection entity2, Class fieldType) {
+    public boolean compare(Collection entity1, Collection entity2, Class fieldType) {
         return false;
     }
 }

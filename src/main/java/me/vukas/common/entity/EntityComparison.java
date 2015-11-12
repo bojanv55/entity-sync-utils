@@ -26,5 +26,5 @@ public abstract class EntityComparison<T> {
         this.compare = compare;
     }
 
-    public abstract boolean areEqual(T entity1, T entity2, Class fieldType);
+    public abstract boolean compare(T entity1, T entity2, Class fieldType);
 }
