@@ -7,10 +7,8 @@ import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
-import me.vukas.common.entity.generation.collection.CollectionEntityGeneration;
-import me.vukas.common.entity.generation.map.MapEntityGeneration;
+import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
-import me.vukas.common.entity.key.ArrayNodeKey;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.key.LeafKey;
 import me.vukas.common.entity.key.NodeKey;
@@ -18,7 +16,6 @@ import me.vukas.common.entity.key.NodeKey;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import static me.vukas.common.base.Arrays.wrap;
 import static me.vukas.common.base.Objects.*;
 
 public class Diff {
@@ -47,7 +44,7 @@ public class Diff {
         return this.diff(original, revised, Name.ROOT, originalClass, null, rootKey);
     }
 
-    private <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
+    public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
         if (original == revised) {
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
@@ -73,47 +70,11 @@ public class Diff {
 
         this.visitedElements.push(original);
 
-        if (fieldType.isArray()) {
-            List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
-
-            Object[] originalArray = wrap(original);
-            Object[] revisedArray = wrap(revised);
-
-            Set<Integer> matchedIndexes = new HashSet<Integer>();
-
-            ORIGINAL_ARRAY:
-            for (int i = 0; i < originalArray.length; i++) {
-                Class elementType = originalArray[i] == null ? null : originalArray[i].getClass();
-                Key<Integer, Object> elementKey = this.generateKey(i, elementType, fieldType, originalArray[i]);
-                for (int j = 0; j < revisedArray.length; j++) {
-                    if (!matchedIndexes.contains(j) && this.compare.compare(originalArray[i], revisedArray[j])) {
-                        matchedIndexes.add(j);
-                        Element<Integer, Object> element = this.diff(originalArray[i], revisedArray[j], j, elementType, fieldType, elementKey);
-                        if (i != j) {
-                            if (element.getStatus() == Element.Status.EQUAL) {
-                                element.setStatus(Element.Status.EQUAL_MOVED);
-                            } else {
-                                element.setStatus(Element.Status.MODIFIED_MOVED);
-                            }
-                        }
-                        elements.add(element);
-                        continue ORIGINAL_ARRAY;
-                    }
-                }
-                elements.add(new LeafElement<Integer, Object>(i, Element.Status.DELETED, elementKey, null));
-            }
-
-            for (int j = 0; j < revisedArray.length; j++) {
-                if (!matchedIndexes.contains(j)) {
-                    elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, revisedArray[j]));
-                }
-            }
-
-            Element.Status status = determineElementStatus(elements);
-
+        if (fieldType.isArray()  || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+            EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>();
+            Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
             this.visitedElements.pop();
-            Key<N, T> arrayKey = this.generateKey(elementName, fieldType, containerType, original);
-            return new NodeElement<N, T>(elementName, status, arrayKey, elements);
+            return element;
         }
 
         for (EntityGeneration<?> entityGeneration : this.entityGenerations) { //TODO: class hierarchy priority
@@ -153,7 +114,7 @@ public class Diff {
         return elements;
     }
 
-    private static Element.Status determineElementStatus(List<Element<?, ?>> children) {
+    public static Element.Status determineElementStatus(List<Element<?, ?>> children) {
         for (Element<?, ?> element : children) {
             if (element.getStatus() != Element.Status.EQUAL) {
                 return Element.Status.MODIFIED;
@@ -162,33 +123,29 @@ public class Diff {
         return Element.Status.EQUAL;
     }
 
-    private <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
+    public <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
         if (value == null || isStringOrPrimitiveOrWrapped(elementType)) {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
 
-        if(visitedKeys.contains(value)){
+        if(this.visitedKeys.contains(value)){
             return null;    //TODO: should we return null or something else on circular reference; Can this even happen?
         }
 
-        visitedKeys.push(value);
+        this.visitedKeys.push(value);
 
-        if(elementType.isArray()){
-            List<Key<?, ?>> keys = new ArrayList<Key<?, ?>>();
-            Object[] originalArray = wrap(value);
-            for(int i=0; i<originalArray.length; i++){
-                Class keyType = originalArray[i] == null ? null : originalArray[i].getClass();
-                keys.add(this.generateKey(i, keyType, elementType, originalArray[i]));
-            }
-            visitedKeys.pop();
-            return new ArrayNodeKey<N, T>(elementName, elementType, containerType, keys, originalArray.length);
+        if(elementType.isArray() || Collection.class.isAssignableFrom(elementType) || Map.class.isAssignableFrom(elementType)){
+            EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>();
+            Key<N, T> key = entityGeneration.generateKey(elementName, elementType, containerType, value);
+            this.visitedKeys.pop();
+            return key;
         }
 
         for(EntityGeneration<?> entityGeneration : this.entityGenerations){
             if(entityGeneration.getType().isAssignableFrom(elementType)){   //TODO: class hierarchy priority
                 EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
                 Key<N, T> key = entityGenerationCasted.generateKey(elementName, elementType, containerType, value);
-                visitedKeys.pop();
+                this.visitedKeys.pop();
                 return key;
             }
         }
@@ -214,7 +171,7 @@ public class Diff {
             }
         }
 
-        visitedKeys.pop();
+        this.visitedKeys.pop();
         return new NodeKey<N, T>(elementName, elementType, containerType, keys);
     }
 
@@ -257,8 +214,6 @@ public class Diff {
         }
 
         private void registerInternalEntityGenerations() {
-            this.registerEntityGeneration(new CollectionEntityGeneration());
-            this.registerEntityGeneration(new MapEntityGeneration());
             this.registerEntityGeneration(new MapEntryEntityGeneration());
         }
 

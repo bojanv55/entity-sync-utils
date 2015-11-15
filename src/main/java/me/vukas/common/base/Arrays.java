@@ -1,11 +1,13 @@
 package me.vukas.common.base;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.Map;
 
 public class Arrays {
     @SuppressWarnings("unchecked")
     public static <T> T partialCopy(T array, int newLength, int[] skipIndexes) {
-        if (!array.getClass().isArray()) {
+        if (array == null || !array.getClass().isArray()) {
             throw new IllegalArgumentException("Parameter 'array' must be an Array");
         }
         int start = 0;
@@ -30,8 +32,23 @@ public class Arrays {
         return newArray;
     }
 
+    public static Object[] wrapCollectionOrMapOrPrimitiveArray(Object input){
+        if(input == null){
+            throw new IllegalArgumentException("Parameter 'input' can not be null");
+        }
+        if(Collection.class.isAssignableFrom(input.getClass())){
+            return ((Collection)input).toArray();
+        }
+        else if(Map.class.isAssignableFrom(input.getClass())){
+            return ((Map)input).entrySet().toArray();
+        }
+        else{
+            return wrap(input);
+        }
+    }
+
     public static Object[] wrap(Object array) {
-        if (!array.getClass().isArray()) {
+        if (array == null || !array.getClass().isArray()) {
             throw new IllegalArgumentException("Parameter 'array' must be an Array");
         }
         Class componentType = array.getClass().getComponentType();

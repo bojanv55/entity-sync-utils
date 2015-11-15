@@ -2,14 +2,12 @@ package me.vukas.common.entity.operation;
 
 import me.vukas.common.entity.EntityComparison;
 import me.vukas.common.entity.EntityDefinition;
-import me.vukas.common.entity.generation.collection.CollectionEntityGeneration;
-import me.vukas.common.entity.generation.map.MapEntityGeneration;
+import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
-import static me.vukas.common.base.Arrays.wrap;
 import static me.vukas.common.base.Objects.getAllFields;
 import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
 
@@ -45,43 +43,30 @@ public class Compare {
             return entity1.equals(entity2);
         }
 
-        if(visitedElements.contains(entity1)){
+        if(this.visitedElements.contains(entity1)){
             return true;
         }
-        visitedElements.push(entity1);
+        this.visitedElements.push(entity1);
 
-        if(fieldType.isArray()){
-            Object[] entity1Array = wrap(entity1);
-            Object[] entity2Array = wrap(entity2);
-
-            if(entity1Array.length!=entity2Array.length){
-                visitedElements.pop();
-                return false;
-            }
-
-            for(int i=0; i<entity1Array.length; i++){
-                if(!this.compare(entity1Array[i], entity2Array[i])){
-                    visitedElements.pop();
-                    return false;
-                }
-            }
-
-            visitedElements.pop();
-            return true;
+        if(fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)){
+            EntityComparison<T> entityComparison = new ArrayEntityGeneration<T>();
+            boolean equals = entityComparison.compare(entity1, entity2, fieldType);
+            this.visitedElements.pop();
+            return equals;
         }
 
         for(EntityComparison<?> entityComparison : this.entityComparisons){
             if(entityComparison.getType().isAssignableFrom(fieldType)){ //TODO: class hierarchy priority
                 EntityComparison<T> entityComparisonCasted = (EntityComparison<T>)entityComparison;
                 boolean equals = entityComparisonCasted.compare(entity1, entity2, fieldType);
-                visitedElements.pop();
+                this.visitedElements.pop();
                 return equals;
             }
         }
 
         List<Field> fields;
-        if(typesToEntityDefinitions.containsKey(fieldType)){
-            fields = typesToEntityDefinitions.get(fieldType).getFields();
+        if(this.typesToEntityDefinitions.containsKey(fieldType)){
+            fields = this.typesToEntityDefinitions.get(fieldType).getFields();
         }
         else{
             fields = getAllFields(fieldType);
@@ -91,7 +76,7 @@ public class Compare {
             try{
                 field.setAccessible(true);
                 if(!this.compare(field.get(entity1), field.get(entity2))){
-                    visitedElements.pop();
+                    this.visitedElements.pop();
                     return false;
                 }
             }
@@ -100,7 +85,7 @@ public class Compare {
             }
         }
 
-        visitedElements.pop();
+        this.visitedElements.pop();
         return true;
     }
 
@@ -143,8 +128,6 @@ public class Compare {
         }
 
         private void registerInternalEntityComparisons() {
-            this.registerEntityComparison(new CollectionEntityGeneration());
-            this.registerEntityComparison(new MapEntityGeneration());
             this.registerEntityComparison(new MapEntryEntityGeneration());
         }
 
