@@ -2,15 +2,21 @@ package me.vukas.common.entity;
 
 import me.vukas.common.entity.operation.Compare;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 
 public abstract class EntityComparison<T> {
-    private final Class<T> type;
+    private Class<T> type;
     private Compare compare;
 
     @SuppressWarnings("unchecked")
     protected EntityComparison() {
-        this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        try {
+            this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        }
+        catch (ClassCastException e){
+            this.type = null;   //TODO: in case we need to init int[] as <T>
+        }
     }
 
     public Class<T> getType() {

@@ -5,6 +5,7 @@ import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -49,7 +50,7 @@ public class Compare {
         this.visitedElements.push(entity1);
 
         if(fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)){
-            EntityComparison<T> entityComparison = new ArrayEntityGeneration<T>();
+            EntityComparison<T> entityComparison = new ArrayEntityGeneration<T>(this);
             boolean equals = entityComparison.compare(entity1, entity2, fieldType);
             this.visitedElements.pop();
             return equals;

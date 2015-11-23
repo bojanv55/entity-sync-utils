@@ -6,6 +6,7 @@ import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.array.key.ArrayNodeKey;
 import me.vukas.common.entity.key.Key;
+import me.vukas.common.entity.operation.Compare;
 import me.vukas.common.entity.operation.Diff;
 
 import java.util.ArrayList;
@@ -16,6 +17,17 @@ import java.util.Set;
 import static me.vukas.common.base.Arrays.wrapCollectionOrMapOrPrimitiveArray;
 
 public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
+
+    public ArrayEntityGeneration(Diff diff, Compare compare){
+        this(compare);
+        this.setDiff(diff);
+    }
+
+    public ArrayEntityGeneration(Compare compare){
+        super();
+        this.setCompare(compare);
+    }
+
     @Override
     public <N> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
         List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
