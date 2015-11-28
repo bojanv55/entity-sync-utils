@@ -26,6 +26,8 @@ public class Patch {
     }
 
     public <T> T patch(T original, Element<Name, T> diff){
+        Class elementType = null;
+
         return null;
     }
 

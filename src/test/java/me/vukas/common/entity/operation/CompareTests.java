@@ -129,27 +129,37 @@ public class CompareTests {
     }
 
     @Test
-    public void comparingEqualIntegerArrayWithNullElementsListsShouldReturnTrue(){
+    public void comparingEqualIntegerArrayListsWithNullElementsShouldReturnTrue(){
         assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4, null), Arrays.asList(1, 2, 3, 4, null)), is(true));
     }
 
     @Test
-    public void comparingDifferentIntegerArrayListsShouldReturnFalse(){
-        assertThat(this.compare.compare(Arrays.asList(null, 2, 3, 4), Arrays.asList(null, 2, 3, 5)), is(false));
+    public void comparingEqualIntegerArrayListsWithRepeatingElementsShouldReturnTrue(){
+        assertThat(this.compare.compare(Arrays.asList(1, 2, 1, 3, 2, 4), Arrays.asList(1, 2, 1, 3, 2, 4)), is(true));
     }
 
     @Test
-    public void comparingEmptySetsShouldReturnTrue(){
-        assertThat(this.compare.compare(Collections.emptySet(), Collections.emptySet()), is(true));
+    public void comparingDifferentIntegerArrayListsWithSameLengthShouldReturnFalse(){
+        assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3, 5)), is(false));
     }
 
     @Test
-    public void comparingEqualIntegerSetsShouldReturnTrue(){
-        assertThat(this.compare.compare(new HashSet<Integer>(Arrays.asList(null, 2, 3, 4)), new HashSet<Integer>(Arrays.asList(4, 3, 2, null))), is(true));
+    public void comparingDifferentIntegerArrayListsWithDifferentLengthShouldReturnFalse(){
+        assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3)), is(false));
     }
 
-    @Test
-    public void comparingDifferentIntegerSetsShouldReturnFalse(){
-        assertThat(this.compare.compare(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4)), new HashSet<Integer>(Arrays.asList(1, 2, 3, 5))), is(false));
-    }
+//    @Test
+//    public void comparingEmptySetsShouldReturnTrue(){
+//        assertThat(this.compare.compare(Collections.emptySet(), Collections.emptySet()), is(true));
+//    }
+//
+//    @Test
+//    public void comparingEqualIntegerSetsShouldReturnTrue(){
+//        assertThat(this.compare.compare(new HashSet<Integer>(Arrays.asList(null, 2, 3, 4)), new HashSet<Integer>(Arrays.asList(4, 3, 2, null))), is(true));
+//    }
+//
+//    @Test
+//    public void comparingDifferentIntegerSetsShouldReturnFalse(){
+//        assertThat(this.compare.compare(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4)), new HashSet<Integer>(Arrays.asList(1, 2, 3, 5))), is(false));
+//    }
 }
