@@ -265,4 +265,19 @@ public class CompareTests {
         map2.put(3, 4);
         assertThat(this.compare.compare(map1, map2), is(false));
     }
+
+    @Test
+    public void comparingEqualObjectGraphShouldReturnTrue() {
+        Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+        map1.put(1, 2);
+        map1.put(2, 3);
+        map1.put(3, 4);
+        map1.put(4, 5);
+        Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+        map2.put(4, 5);
+        map2.put(3, 4);
+        map2.put(2, 3);
+        map2.put(1, 2);
+        assertThat(this.compare.compare(map1, map2), is(true));
+    }
 }
