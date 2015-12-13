@@ -1,5 +1,7 @@
 package me.vukas.common.entity.key;
 
+import java.lang.reflect.Field;
+
 public abstract class Key<N, V> {
     private final N name;
     private final Class type;
@@ -21,6 +23,16 @@ public abstract class Key<N, V> {
 
     public Class getContainer() {
         return container;
+    }
+
+    public Field getAccessibleDeclaredFiled(){
+        try {
+            Field field = this.getContainer().getDeclaredField((String)this.getName());
+            field.setAccessible(true);
+            return field;
+        } catch (NoSuchFieldException e) {
+            throw new UnsupportedOperationException("Field not found during patch process");
+        }
     }
 
     public abstract boolean match(V value);

@@ -2,6 +2,7 @@ package me.vukas.common.base;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class Arrays {
@@ -32,6 +33,43 @@ public class Arrays {
         return newArray;
     }
 
+    public static Object unwrapCollectionOrMapOrPrimitiveArray(Object input, Class outputType){
+        if(outputType.isArray()){
+            Class componentType = outputType.getComponentType();
+            if(componentType.isPrimitive()) {
+                return unwrap((Object[])input);
+            }
+        }
+        if(Collection.class.isAssignableFrom(outputType)){
+            Collection newCollection = null;
+            try {
+                newCollection = (Collection)outputType.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            Collections.addAll(newCollection, (Object[]) input);
+            return newCollection;
+        }
+        else if(Map.class.isAssignableFrom(outputType)){
+            Map newMap = null;
+            try {
+                newMap = (Map)outputType.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            for(Object entry : (Object[])input){
+                Map.Entry mapEntry = (Map.Entry)entry;
+                newMap.put(mapEntry.getKey(), mapEntry.getValue());
+            }
+            return newMap;
+        }
+        return input;   //if needs no unwrapping, return original
+    }
+
     public static Object[] wrapCollectionOrMapOrPrimitiveArray(Object input){
         if(input == null){
             throw new IllegalArgumentException("Parameter 'input' can not be null");
@@ -45,6 +83,58 @@ public class Arrays {
         else{
             return wrap(input);
         }
+    }
+
+    //TODO: CHECK logic
+    public static void insert(Object array, int index, Object element){
+        Class componentType = array.getClass().getComponentType();
+        if(componentType.isPrimitive()){
+            if (byte.class.isAssignableFrom(componentType)) {
+                ((byte[])array)[index] = (Byte)element;
+            } else if (short.class.isAssignableFrom(componentType)) {
+                ((short[])array)[index] = (Short)element;
+            } else if (int.class.isAssignableFrom(componentType)) {
+                ((int[])array)[index] = (Integer)element;
+            } else if (long.class.isAssignableFrom(componentType)) {
+                ((long[])array)[index] = (Long)element;
+            } else if (float.class.isAssignableFrom(componentType)) {
+                ((float[])array)[index] = (Float)element;
+            } else if (double.class.isAssignableFrom(componentType)) {
+                ((double[])array)[index] = (Double)element;
+            } else if (boolean.class.isAssignableFrom(componentType)) {
+                ((boolean[])array)[index] = (Boolean)element;
+            } else if (char.class.isAssignableFrom(componentType)) {
+                ((char[])array)[index] = (Character)element;
+            }
+        }
+        else {
+            ((Object[]) array)[index] = element;
+        }
+    }
+
+    //TODO: add all implementation
+    public static Object unwrap(Object[] array){
+        if(array == null){
+            return null;
+        }
+        int arrayLength = 0;
+        for(int i=0; i<array.length; i++){
+            if(array[i]!=null){
+                arrayLength++;
+            }
+        }
+        if(array instanceof Integer[]){
+            int[] unwrappedArray = new int[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Integer)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        return null;    //TODO: should cover all rest of the cases
     }
 
     public static Object[] wrap(Object array) {

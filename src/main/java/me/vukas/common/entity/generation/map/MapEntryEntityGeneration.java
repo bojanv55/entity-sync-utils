@@ -6,6 +6,7 @@ import me.vukas.common.entity.generation.map.element.MapEntryNodeElement;
 import me.vukas.common.entity.generation.map.key.MapEntryNodeKey;
 import me.vukas.common.entity.key.Key;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
@@ -35,6 +36,14 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
         Key keyValue = this.getDiff().generateKey(elementName, valueClass, elementType, value.getValue());
 
         return new MapEntryNodeKey<N>(elementName, elementType, containerType, keyKey, keyValue);
+    }
+
+    @Override
+    public <N> Map.Entry patch(Map.Entry original, Element<N, Map.Entry> diff) {
+        return new AbstractMap.SimpleEntry(
+                this.getPatch().patch(original.getKey(), ((MapEntryNodeElement)diff).getElementKey()),
+                this.getPatch().patch(original.getValue(), ((MapEntryNodeElement)diff).getElementValue())
+        );
     }
 
     @Override

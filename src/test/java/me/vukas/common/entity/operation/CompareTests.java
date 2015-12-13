@@ -1,6 +1,5 @@
-package me.vukas.common.entity.operation.compare;
+package me.vukas.common.entity.operation;
 
-import me.vukas.common.entity.operation.Compare;
 import org.junit.Before;
 import org.junit.Test;
 

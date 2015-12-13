@@ -8,19 +8,22 @@ import me.vukas.common.entity.generation.array.key.ArrayNodeKey;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.operation.Compare;
 import me.vukas.common.entity.operation.Diff;
+import me.vukas.common.entity.operation.Patch;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import static me.vukas.common.base.Arrays.wrapCollectionOrMapOrPrimitiveArray;
+import static me.vukas.common.base.Arrays.*;
 
 public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
     public ArrayEntityGeneration(Diff diff, Compare compare){
         this(compare);
         this.setDiff(diff);
+    }
+
+    public ArrayEntityGeneration(Patch patch){
+        super();
+        this.setPatch(patch);
     }
 
     public ArrayEntityGeneration(Compare compare){
@@ -80,6 +83,54 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
             keys.add(this.getDiff().generateKey(i, keyType, elementType, originalArray[i]));
         }
         return new ArrayNodeKey<N, T>(elementName, elementType, containerType, keys, originalArray.length);
+    }
+
+    @Override
+    public <N> T patch(T original, Element<N, T> diff) {
+        Class originalType = diff.getKey() == null ? null : diff.getKey().getType();
+        Object[] originalArray = wrapCollectionOrMapOrPrimitiveArray(original);
+
+        if(((ArrayNodeKey)diff.getKey()).getLength() != originalArray.length
+                || !diff.getKey().match(original)){
+            throw new UnsupportedOperationException("Array size and/or element mismatch");
+        }
+
+        Set<Integer> skipIndexes = new TreeSet<Integer>();
+        int newLength = originalArray.length;
+        for(Element<?,?> childElement : ((NodeElement<?,?>)diff).getChildren()){
+            if(childElement.getStatus() == Element.Status.ADDED){
+                newLength++;
+            }
+            else if(childElement.getStatus() == Element.Status.DELETED){
+                newLength--;
+            }
+
+            if(childElement.getStatus() == Element.Status.DELETED
+                    || childElement.getStatus() == Element.Status.EQUAL_MOVED
+                    || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
+                skipIndexes.add((Integer)childElement.getKey().getName());
+            }
+        }
+
+        int[] skipIndexesUnwrapped = (int[])unwrap(skipIndexes.toArray(new Integer[skipIndexes.size()]));
+        Object newArray = partialCopy(originalArray, newLength, skipIndexesUnwrapped);
+        for(Element childElement : ((NodeElement<?,?>)diff).getChildren()){
+            if(childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED){
+                //--
+            }
+            else if(childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
+                if(!childElement.getKey().match(originalArray[(Integer)childElement.getKey().getName()])){
+                    //TODO:----------same code as above in lines
+                    throw new RuntimeException("Modified element in array violates key equality or maybe not sorted collections so we have to fallback to unsorted collection mode");
+                }
+                insert(newArray, (Integer)childElement.getName(), this.getPatch().patch(originalArray[(Integer)childElement.getKey().getName()], childElement));
+            }
+            else if(childElement.getStatus() == Element.Status.ADDED){
+                insert(newArray, (Integer)childElement.getName(), this.getPatch().patch(null, childElement));
+            }
+        }
+
+        return (T)unwrapCollectionOrMapOrPrimitiveArray(newArray, originalType);
     }
 
     @Override
