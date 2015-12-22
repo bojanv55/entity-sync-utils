@@ -146,14 +146,14 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         //this means that collection is not ordered!
         Collection newCollection = new ArrayList<Object>(Arrays.asList(originalArray));
 
-        ORDERED_COLLECTION:
+        UNORDERED_COLLECTION:
         for(Element childElement : diff.getChildren()){
             if(childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED){
                 Iterator iterator = newCollection.iterator();
                 while(iterator.hasNext()){
                     Object newElement = iterator.next();
                     if(childElement.getKey().match(newElement)){
-                        continue ORDERED_COLLECTION;
+                        continue UNORDERED_COLLECTION;
                     }
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
@@ -165,7 +165,7 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                     if(childElement.getKey().match(newElement)){
                         iterator.remove();
                         newCollection.add(this.getPatch().patch(newElement, childElement));
-                        continue ORDERED_COLLECTION;
+                        continue UNORDERED_COLLECTION;
                     }
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
@@ -176,7 +176,7 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                     Object newElement = iterator.next();
                     if(childElement.getKey().match(newElement)){
                         iterator.remove();
-                        continue ORDERED_COLLECTION;
+                        continue UNORDERED_COLLECTION;
                     }
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
@@ -199,7 +199,7 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         }
 
         for(int i=0; i<entity1Array.length; i++){
-            if(!this.getCompare().compare(entity1Array[i], entity2Array[i])){
+            if(!this.getCompare().compare(entity1Array[i], entity2Array[i])){   //TODO: check if this is real array - if it is, it must be ordered!
 
                 //we possibly compare unordered collections so switch to that mode
                 Set<Integer> visitedIndexes = new HashSet<Integer>();
