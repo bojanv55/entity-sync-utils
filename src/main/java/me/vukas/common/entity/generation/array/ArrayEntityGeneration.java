@@ -91,7 +91,7 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         Object[] originalArray = wrapCollectionOrMapOrPrimitiveArray(original);
 
         if(((ArrayNodeKey)diff.getKey()).getLength() != originalArray.length
-                || !diff.getKey().match(original)){
+                || !diff.getKey().match(original)){ //TODO: check if getkey match is needed here -- possible previous checking, should not check 2 times
             throw new UnsupportedOperationException("Array size and/or element mismatch");
         }
 
@@ -116,13 +116,22 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         Object newArray = partialCopy(originalArray, newLength, skipIndexesUnwrapped);
         for(Element childElement : ((NodeElement<?,?>)diff).getChildren()){
             if(childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED){
-                //--
+
+                if(!childElement.getKey().match(originalArray[(Integer)childElement.getKey().getName()])){
+                    return tryPatchingAsUnorderedCollection((NodeElement<?, ?>) diff, originalType, originalArray);
+                }
+
+                //collection is ordered so we can process it as usual
+                insert(newArray, (Integer)childElement.getName(), originalArray[(Integer)childElement.getKey().getName()]);
+
             }
             else if(childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
+
                 if(!childElement.getKey().match(originalArray[(Integer)childElement.getKey().getName()])){
-                    //TODO:----------same code as above in lines
-                    throw new RuntimeException("Modified element in array violates key equality or maybe not sorted collections so we have to fallback to unsorted collection mode");
+                    return tryPatchingAsUnorderedCollection((NodeElement<?, ?>) diff, originalType, originalArray);
                 }
+
+                //collection is ordered so we can process it as usual
                 insert(newArray, (Integer)childElement.getName(), this.getPatch().patch(originalArray[(Integer)childElement.getKey().getName()], childElement));
             }
             else if(childElement.getStatus() == Element.Status.ADDED){
@@ -131,6 +140,53 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         }
 
         return (T)unwrapCollectionOrMapOrPrimitiveArray(newArray, originalType);
+    }
+
+    private T tryPatchingAsUnorderedCollection(NodeElement<?, ?> diff, Class originalType, Object[] originalArray) {
+        //this means that collection is not ordered!
+        Collection newCollection = new ArrayList<Object>(Arrays.asList(originalArray));
+
+        ORDERED_COLLECTION:
+        for(Element childElement : diff.getChildren()){
+            if(childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED){
+                Iterator iterator = newCollection.iterator();
+                while(iterator.hasNext()){
+                    Object newElement = iterator.next();
+                    if(childElement.getKey().match(newElement)){
+                        continue ORDERED_COLLECTION;
+                    }
+                }
+                throw new RuntimeException("Cannot even find it if threaten as unordered");
+            }
+            else if(childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
+                Iterator iterator = newCollection.iterator();
+                while(iterator.hasNext()){
+                    Object newElement = iterator.next();
+                    if(childElement.getKey().match(newElement)){
+                        iterator.remove();
+                        newCollection.add(this.getPatch().patch(newElement, childElement));
+                        continue ORDERED_COLLECTION;
+                    }
+                }
+                throw new RuntimeException("Cannot even find it if threaten as unordered");
+            }
+            else if(childElement.getStatus() == Element.Status.DELETED){
+                Iterator iterator = newCollection.iterator();
+                while(iterator.hasNext()){
+                    Object newElement = iterator.next();
+                    if(childElement.getKey().match(newElement)){
+                        iterator.remove();
+                        continue ORDERED_COLLECTION;
+                    }
+                }
+                throw new RuntimeException("Cannot even find it if threaten as unordered");
+            }
+            else if(childElement.getStatus() == Element.Status.ADDED){
+                newCollection.add(this.getPatch().patch(null, childElement));
+            }
+        }
+
+        return (T)unwrapCollectionOrMapOrPrimitiveArray(newCollection.toArray(), originalType);
     }
 
     @Override
@@ -144,7 +200,21 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
         for(int i=0; i<entity1Array.length; i++){
             if(!this.getCompare().compare(entity1Array[i], entity2Array[i])){
-                return false;
+
+                //we possibly compare unordered collections so switch to that mode
+                Set<Integer> visitedIndexes = new HashSet<Integer>();
+                INNER_LOOP:
+                for(int j=i; j<entity1Array.length; j++){
+                    for(int k=i; k<entity2Array.length; k++){
+                        if(this.getCompare().compare(entity1Array[j], entity2Array[k]) && !visitedIndexes.contains(k)){
+                            visitedIndexes.add(k);
+                            continue INNER_LOOP;
+                        }
+                    }
+                    return false;
+                }
+
+                return true;
             }
         }
 

@@ -30,7 +30,7 @@ public class Patch {
     public <N, T> T patch(T original, Element<N, T> diff){
         Class originalType = diff.getKey() == null ? null : diff.getKey().getType();
 
-        if(!diff.getKey().match(original)){
+        if(diff.getKey()!=null && !diff.getKey().match(original)){
             throw new UnsupportedOperationException("Key does not match");
         }
 

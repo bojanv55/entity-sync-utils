@@ -32,6 +32,7 @@ public class ArrayNodeKey<N, V> extends NodeKey<N, V> {
             if(!child.match(array[(Integer)child.getName()])){
                 INNER_LOOP:
                 while(childIterator.hasNext()){
+                    child = childIterator.next();
                     for(int i=0; i<array.length; i++){
                         if(child.match(array[i]) && !visitedIndexes.contains(i)){
                             visitedIndexes.add(i);

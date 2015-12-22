@@ -123,27 +123,27 @@ public class CompareTests {
 
     @Test
     public void comparingEqualIntegerArrayListsShouldReturnTrue() {
-        assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3, 4)), is(true));
+        assertThat(this.compare.compare(new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4)), new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4))), is(true));
     }
 
     @Test
     public void comparingEqualIntegerArrayListsWithNullElementsShouldReturnTrue() {
-        assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4, null), Arrays.asList(1, 2, 3, 4, null)), is(true));
+        assertThat(this.compare.compare(new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, null)), new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, null))), is(true));
     }
 
     @Test
     public void comparingEqualIntegerArrayListsWithRepeatingElementsShouldReturnTrue() {
-        assertThat(this.compare.compare(Arrays.asList(1, 2, 1, 3, 2, 4), Arrays.asList(1, 2, 1, 3, 2, 4)), is(true));
+        assertThat(this.compare.compare(new ArrayList<Integer>(Arrays.asList(1, 2, 1, 3, 2, 4)), new ArrayList<Integer>(Arrays.asList(1, 2, 1, 3, 2, 4))), is(true));
     }
 
     @Test
     public void comparingDifferentIntegerArrayListsWithSameLengthShouldReturnFalse() {
-        assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3, 5)), is(false));
+        assertThat(this.compare.compare(new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4)), new ArrayList<Integer>(Arrays.asList(1, 2, 3, 5))), is(false));
     }
 
     @Test
     public void comparingDifferentIntegerArrayListsWithDifferentLengthShouldReturnFalse() {
-        assertThat(this.compare.compare(Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3)), is(false));
+        assertThat(this.compare.compare(new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4)), new ArrayList<Integer>(Arrays.asList(1, 2, 3))), is(false));
     }
 
     @Test
@@ -174,6 +174,16 @@ public class CompareTests {
     @Test
     public void comparingDifferentIntegerSetsWithDifferentLengthShouldReturnFalse() {
         assertThat(this.compare.compare(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4)), new HashSet<Integer>(Arrays.asList(1, 2, 3))), is(false));
+    }
+
+    @Test
+    public void comparingEqualUnorderedLinkedHashSetsShouldReturnTrue(){
+        assertThat(this.compare.compare(new LinkedHashSet<Integer>(Arrays.asList(1, 2, 3, 4)), new LinkedHashSet<Integer>(Arrays.asList(2, 1, 4, 3))), is(true));
+    }
+
+    @Test
+    public void comparingEqualUnorderedLinkedHashSetsWithRepeatingElementsShouldReturnTrue(){
+        assertThat(this.compare.compare(new LinkedHashSet<Integer>(Arrays.asList(1, 2, 3, 4, 1, 1, 5, 2)), new LinkedHashSet<Integer>(Arrays.asList(2, 1, 4, 3, 2, 5, 1, 1))), is(true));
     }
 
     @Test
@@ -266,17 +276,7 @@ public class CompareTests {
     }
 
     @Test
-    public void comparingEqualObjectGraphShouldReturnTrue() {
-        Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
-        map1.put(1, 2);
-        map1.put(2, 3);
-        map1.put(3, 4);
-        map1.put(4, 5);
-        Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
-        map2.put(4, 5);
-        map2.put(3, 4);
-        map2.put(2, 3);
-        map2.put(1, 2);
-        assertThat(this.compare.compare(map1, map2), is(true));
+    public void comparingEmptyObjectGraphsShouldReturnTrue() {
+        //TODO: add tests
     }
 }

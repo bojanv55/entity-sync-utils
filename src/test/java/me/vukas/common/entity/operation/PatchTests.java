@@ -5,6 +5,8 @@ import me.vukas.common.entity.element.Element;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.*;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -60,5 +62,229 @@ public class PatchTests {
     public void patchingStringWithStringShouldProduceString(){
         Element<Name, String> diffElement = this.diff.diff("original", "revised");
         assertThat(this.compare.compare(this.patch.patch("original", diffElement), "revised"), is(true));
+    }
+
+    @Test
+    public void patchingEmptyPrimitiveIntegerArrayWithEmptyPrimitiveIntegerArrayShouldProduceEmptyArray(){
+        int[] array1 = new int[0];
+        int[] array2 = new int[0];
+        Element<Name, int[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new int[0], diffElement), new int[0]), is(true));
+    }
+
+    @Test
+    public void patchingEmptyPrimitiveIntegerArrayWithPrimitiveIntegerArrayShouldProduceArray(){
+        int[] array1 = new int[0];
+        int[] array2 = new int[]{1, 2, 3, 4, 5};
+        Element<Name, int[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new int[0], diffElement), new int[]{1, 2, 3, 4, 5}), is(true));
+    }
+
+    @Test
+    public void patchingPrimitiveIntegerArrayWithEmptyPrimitiveIntegerArrayShouldProduceArray(){
+        int[] array1 = new int[]{1, 2, 3, 4, 5};
+        int[] array2 = new int[0];
+        Element<Name, int[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new int[]{1, 2, 3, 4, 5}, diffElement), new int[0]), is(true));
+    }
+
+    @Test
+    public void patchingPrimitiveIntegerArrayWithPrimitiveIntegerArrayShouldProduceArray(){
+        int[] array1 = new int[]{1, 2, 3, 4, 5};
+        int[] array2 = new int[]{2, 6, 7};
+        Element<Name, int[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new int[]{1, 2, 3, 4, 5}, diffElement), new int[]{2, 6, 7}), is(true));
+    }
+
+    @Test
+    public void patchingPrimitiveIntegerArrayWithRepeatingElementsWithPrimitiveIntegerArrayWithRepeatingElementsShouldProduceArray(){
+        int[] array1 = new int[]{1, 2, 2, 3, 4, 7, 5, 1};
+        int[] array2 = new int[]{2, 6, 6, 7, 2, 11, 22, 8, 11};
+        Element<Name, int[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new int[]{1, 2, 2, 3, 4, 7, 5, 1}, diffElement), new int[]{2, 6, 6, 7, 2, 11, 22, 8, 11}), is(true));
+    }
+
+    @Test
+    public void patchingEmptyIntegerArrayWithEmptyIntegerArrayShouldProduceEmptyArray(){
+        Integer[] array1 = new Integer[0];
+        Integer[] array2 = new Integer[0];
+        Element<Name, Integer[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new Integer[0], diffElement), new Integer[0]), is(true));
+    }
+
+    @Test
+    public void patchingEmptyIntegerArrayWithIntegerArrayShouldProduceEmptyArray(){
+        Integer[] array1 = new Integer[0];
+        Integer[] array2 = new Integer[]{1, 2, 3, 4, 5};
+        Element<Name, Integer[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new Integer[0], diffElement), new Integer[]{1, 2, 3, 4, 5}), is(true));
+    }
+
+    @Test
+    public void patchingIntegerArrayWithEmptyIntegerArrayShouldProduceEmptyArray(){
+        Integer[] array1 = new Integer[]{1, 2, 3, 4, 5};
+        Integer[] array2 = new Integer[0];
+        Element<Name, Integer[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new Integer[]{1, 2, 3, 4, 5}, diffElement), new Integer[0]), is(true));
+    }
+
+    @Test
+    public void patchingIntegerArrayWithIntegerArrayShouldProduceArray(){
+        Integer[] array1 = new Integer[]{1, 2, 3, 4, 5};
+        Integer[] array2 = new Integer[]{2, 6, 7};
+        Element<Name, Integer[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new Integer[]{1, 2, 3, 4, 5}, diffElement), new Integer[]{2, 6, 7}), is(true));
+    }
+
+    @Test
+    public void patchingIntegerArrayWithRepeatingElementsWithIntegerArrayWithRepeatingElementsShouldProduceArray(){
+        Integer[] array1 = new Integer[]{1, 2, 2, 3, 4, 7, 5, 1};
+        Integer[] array2 = new Integer[]{2, 6, 6, 7, 2, 11, 22, 8, 11};
+        Element<Name, Integer[]> diffElement = this.diff.diff(array1, array2);
+        assertThat(this.compare.compare(this.patch.patch(new Integer[]{1, 2, 2, 3, 4, 7, 5, 1}, diffElement), new Integer[]{2, 6, 6, 7, 2, 11, 22, 8, 11}), is(true));
+    }
+
+    @Test
+    public void patchingEmptyArrayListWithEmptyArrayListShouldProduceArrayList() {
+        List<Integer> list1 = new ArrayList<Integer>();
+        List<Integer> list2 = new ArrayList<Integer>();
+        Element<Name, List<Integer>> diffElement = this.diff.diff(list1, list2);
+        assertThat(this.compare.compare(this.patch.patch(new ArrayList<Integer>(), diffElement), new ArrayList<Integer>()), is(true));
+    }
+
+    @Test
+    public void patchingEmptyArrayListWithArrayListShouldProduceArrayList() {
+        List<Integer> list1 = new ArrayList<Integer>();
+        List<Integer> list2 = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        Element<Name, List<Integer>> diffElement = this.diff.diff(list1, list2);
+        assertThat(this.compare.compare(this.patch.patch(new ArrayList<Integer>(), diffElement), new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5))), is(true));
+    }
+
+    @Test
+    public void patchingArrayListWithEmptyArrayListShouldProduceArrayList() {
+        List<Integer> list1 = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        List<Integer> list2 = new ArrayList<Integer>();
+        Element<Name, List<Integer>> diffElement = this.diff.diff(list1, list2);
+        assertThat(this.compare.compare(this.patch.patch(new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5)), diffElement), new ArrayList<Integer>()), is(true));
+    }
+
+    @Test
+    public void patchingArrayListWithArrayListShouldProduceArrayList() {
+        List<Integer> list1 = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        List<Integer> list2 = new ArrayList<Integer>(Arrays.asList(11, 12, 13, 1));
+        Element<Name, List<Integer>> diffElement = this.diff.diff(list1, list2);
+        assertThat(this.compare.compare(this.patch.patch(new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5)), diffElement), new ArrayList<Integer>(Arrays.asList(11, 12, 13, 1))), is(true));
+    }
+
+    @Test
+    public void patchingArrayListWithRepeatingElementsWithArrayListWithRepeatingElementsShouldProduceArrayList() {
+        List<Integer> list1 = new ArrayList<Integer>(Arrays.asList(1, 2, 2, 3, 4, 7, 5, 1));
+        List<Integer> list2 = new ArrayList<Integer>(Arrays.asList(2, 6, 6, 7, 2, 11, 22, 8, 11));
+        Element<Name, List<Integer>> diffElement = this.diff.diff(list1, list2);
+        assertThat(this.compare.compare(this.patch.patch(new ArrayList<Integer>(Arrays.asList(1, 2, 2, 3, 4, 7, 5, 1)), diffElement), new ArrayList<Integer>(Arrays.asList(2, 6, 6, 7, 2, 11, 22, 8, 11))), is(true));
+    }
+
+    @Test
+    public void patchingEmptyHashSetWithEmptyHashSetShouldProduceHashSet() {
+        Set<Integer> set1 = new HashSet<Integer>();
+        Set<Integer> set2 = new HashSet<Integer>();
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new HashSet<Integer>(), diffElement), new HashSet<Integer>()), is(true));
+    }
+
+    @Test
+    public void patchingEmptyHashSetWithHashSetShouldProduceHashSet() {
+        Set<Integer> set1 = new HashSet<Integer>();
+        Set<Integer> set2 = new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new HashSet<Integer>(), diffElement), new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5))), is(true));
+    }
+
+    @Test
+    public void patchingHashSetWithEmptyHashSetShouldProduceHashSet() {
+        Set<Integer> set1 = new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        Set<Integer> set2 = new HashSet<Integer>();
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5)), diffElement), new HashSet<Integer>()), is(true));
+    }
+
+    @Test
+    public void patchingHashSetWithHashSetShouldProduceHashSet() {
+        Set<Integer> set1 = new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        Set<Integer> set2 = new HashSet<Integer>(Arrays.asList(11, 12, 13, 1));
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5)), diffElement), new HashSet<Integer>(Arrays.asList(11, 12, 13, 1))), is(true));
+    }
+
+    @Test
+    public void patchingHashSetWithRepeatingElementsWithHashSetWithRepeatingElementsShouldProduceHashSet() {
+        Set<Integer> set1 = new HashSet<Integer>(Arrays.asList(1, 2, 2, 3, 4, 7, 5, 1));
+        Set<Integer> set2 = new HashSet<Integer>(Arrays.asList(2, 6, 6, 7, 2, 11, 22, 8, 11));
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new HashSet<Integer>(Arrays.asList(1, 2, 2, 3, 4, 7, 5, 1)), diffElement), new HashSet<Integer>(Arrays.asList(2, 6, 6, 7, 2, 11, 22, 8, 11))), is(true));
+    }
+
+    @Test
+    public void patchingUnorderedLinkedHashSetWithUnorderedLinkedHashSetShouldProduceLinkedHashSet() {
+        Set<Integer> set1 = new LinkedHashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5));
+        Set<Integer> set2 = new LinkedHashSet<Integer>(Arrays.asList(11, 12, 13, 1));
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new LinkedHashSet<Integer>(Arrays.asList(5, 4, 3, 2, 1)), diffElement), new LinkedHashSet<Integer>(Arrays.asList(1, 13, 12, 11))), is(true));
+    }
+
+    @Test
+    public void patchingUnorderedLinkedHashSetWithRepeatingElementsWithUnorderedLinkedHashSetWithRepeatingElementsShouldProduceLinkedHashSet() {
+        Set<Integer> set1 = new LinkedHashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5, 2, 2, 4, 11));
+        Set<Integer> set2 = new LinkedHashSet<Integer>(Arrays.asList(11, 2, 2, 12, 13, 1));
+        Element<Name, Set<Integer>> diffElement = this.diff.diff(set1, set2);
+        assertThat(this.compare.compare(this.patch.patch(new LinkedHashSet<Integer>(Arrays.asList(5, 4, 3, 2, 1, 11, 4, 2, 2)), diffElement), new LinkedHashSet<Integer>(Arrays.asList(1, 13, 12, 11, 2, 2))), is(true));
+    }
+
+    @Test
+    public void patchingEmptyHashMapWithEmptyHashMapShouldProduceHashMap() {
+        Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+        Element<Name, Map<Integer, Integer>> diffElement = this.diff.diff(map1, map2);
+        assertThat(this.compare.compare(this.patch.patch(new HashMap<Integer, Integer>(), diffElement), new HashMap<Integer, Integer>()), is(true));
+    }
+
+    @Test
+    public void patchingEmptyHashMapWithHashMapShouldProduceHashMap() {
+        Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+        map2.put(4, 5);
+        map2.put(3, 4);
+        map2.put(2, 3);
+        map2.put(1, 2);
+        Element<Name, Map<Integer, Integer>> diffElement = this.diff.diff(map1, map2);
+        assertThat(this.compare.compare(this.patch.patch(new HashMap<Integer, Integer>(), diffElement), map2), is(true));
+    }
+
+    @Test
+    public void patchingHashMapWithEmptyHashMapShouldProduceHashMap() {
+        Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+        map1.put(4, 5);
+        map1.put(3, 4);
+        map1.put(2, 3);
+        map1.put(1, 2);
+        Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+        Element<Name, Map<Integer, Integer>> diffElement = this.diff.diff(map1, map2);
+        assertThat(this.compare.compare(this.patch.patch(map1, diffElement), new HashMap<Integer, Integer>()), is(true));
+    }
+
+    @Test
+    public void patchingHashMapWithHashMapShouldProduceHashMap() {
+        Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+        map1.put(4, 5);
+        map1.put(3, 4);
+        map1.put(2, 3);
+        map1.put(1, 2);
+        Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+        map2.put(10, 22);
+        map2.put(2, 14);
+        map2.put(42, 8);
+        map2.put(1, 2);
+        Element<Name, Map<Integer, Integer>> diffElement = this.diff.diff(map1, map2);
+        assertThat(this.compare.compare(this.patch.patch(map1, diffElement), map2), is(true));
     }
 }
