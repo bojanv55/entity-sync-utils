@@ -6,8 +6,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class EnumerationImpl implements Base {
     private int commonInt;
     private String commonString;
-    private static int commonStaticInt = 1;
-    private static String commonStaticString = "commonStaticString1";
+    private static int commonStaticInt = 2;
+    private static String commonStaticString = "commonStaticString2";
     private int[] commonIntArray;
     private String[] commonStringArray;
     private List<String> commonStringList;
@@ -15,7 +15,7 @@ public class EnumerationImpl implements Base {
     private Map<String, String> commonStringMap;
 
     EnumerationImpl(){
-        this(ThreadLocalRandom.current().nextInt(1, 11));
+        this(1);
     }
 
     EnumerationImpl(int sequenceNumber){

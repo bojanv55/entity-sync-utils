@@ -57,7 +57,7 @@ public abstract class BaseEntity implements Base {
     public BaseEntity(boolean init){}
 
     public BaseEntity(){
-        this(ThreadLocalRandom.current().nextInt(1, 11));
+        this(1);
     }
 
     public BaseEntity(int sequenceNumber){
@@ -78,17 +78,17 @@ public abstract class BaseEntity implements Base {
         this.commonEnumeration = Enumeration.ENUM2;
         this.baseEntityEnumeration = Enumeration.ENUM1;
 
-        baseEntityProtectedStaticInt = sequenceNumber;
-        baseEntityPublicStaticInt = sequenceNumber;
+        baseEntityProtectedStaticInt = 1;
+        baseEntityPublicStaticInt = 1;
 
-        commonStaticInt = sequenceNumber;
-        baseEntityStaticInt = sequenceNumber;
+        commonStaticInt = 1;
+        baseEntityStaticInt = 1;
 
-        baseEntityProtectedStaticString = "baseEntityProtectedStaticString" + sequenceNumber;
-        baseEntityPublicStaticString = "baseEntityPublicStaticString" + sequenceNumber;
+        baseEntityProtectedStaticString = "baseEntityProtectedStaticString" + 1;
+        baseEntityPublicStaticString = "baseEntityPublicStaticString" + 1;
 
-        commonStaticString = "commonStaticString" + sequenceNumber;
-        baseEntityStaticString = "baseEntityStaticString" + sequenceNumber;
+        commonStaticString = "commonStaticString" + 1;
+        baseEntityStaticString = "baseEntityStaticString" + 1;
 
         this.baseEntityProtectedIntArray = new int[sequenceNumber];
         this.baseEntityPublicIntArray = new int[sequenceNumber];

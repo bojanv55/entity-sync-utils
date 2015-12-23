@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class Patch {
+    private final Stack<Object> patchedElements = new Stack<Object>();
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final List<EntityGeneration<?>> entityGenerations;
 

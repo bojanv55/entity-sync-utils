@@ -86,16 +86,20 @@ public class ChildEntity extends BaseEntity {
 
     private ChildEntity parent;
 
+    public void setParent(ChildEntity parent) {
+        this.parent = parent;
+    }
+
     public ChildEntity(boolean init){
         super(init);
     }
 
     public ChildEntity(){
-        this(ThreadLocalRandom.current().nextInt(1, 11));
+        this(1);
     }
 
     public ChildEntity(int sequenceNumber){
-        super(ThreadLocalRandom.current().nextInt(1, 11));
+        super(sequenceNumber+1);
         this.baseEntityProtectedInt = sequenceNumber;
         this.baseEntityPublicInt = sequenceNumber;
         this.commonInt = sequenceNumber;
@@ -118,22 +122,22 @@ public class ChildEntity extends BaseEntity {
         this.childEntityProtectedEnumeration = Enumeration.ENUM1;
         this.childEntityPublicEnumeration = Enumeration.ENUM2;
 
-        baseEntityProtectedStaticInt = sequenceNumber;
-        baseEntityPublicStaticInt = sequenceNumber;
+        baseEntityProtectedStaticInt = 2;
+        baseEntityPublicStaticInt = 2;
 
-        commonStaticInt = sequenceNumber;
-        childEntityStaticInt = sequenceNumber;
+        commonStaticInt = 2;
+        childEntityStaticInt = 2;
 
-        childEntityProtectedStaticInt = sequenceNumber;
-        childEntityPublicStaticInt = sequenceNumber;
+        childEntityProtectedStaticInt = 2;
+        childEntityPublicStaticInt = 2;
 
-        baseEntityProtectedStaticString = "baseEntityProtectedStaticString" + sequenceNumber;
-        baseEntityPublicStaticString = "baseEntityPublicStaticString" + sequenceNumber;
+        baseEntityProtectedStaticString = "baseEntityProtectedStaticString" + 2;
+        baseEntityPublicStaticString = "baseEntityPublicStaticString" + 2;
 
-        commonStaticString = "commonStaticString" + sequenceNumber;
-        childEntityStaticString = "childEntityStaticString" + sequenceNumber;
-        childEntityProtectedStaticString = "childEntityProtectedStaticString" + sequenceNumber;
-        childEntityPublicStaticString = "childEntityPublicStaticString" + sequenceNumber;
+        commonStaticString = "commonStaticString" + 2;
+        childEntityStaticString = "childEntityStaticString" + 2;
+        childEntityProtectedStaticString = "childEntityProtectedStaticString" + 2;
+        childEntityPublicStaticString = "childEntityPublicStaticString" + 2;
 
         this.baseEntityProtectedIntArray = new int[sequenceNumber];
         this.baseEntityPublicIntArray = new int[sequenceNumber];

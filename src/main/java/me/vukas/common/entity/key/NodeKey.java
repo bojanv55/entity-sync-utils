@@ -1,5 +1,7 @@
 package me.vukas.common.entity.key;
 
+import me.vukas.common.entity.Name;
+
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -30,6 +32,9 @@ public class NodeKey<N, V> extends Key<N, V> {
 
     private boolean matchKey(V value) throws NoSuchFieldException, IllegalAccessException {
         for(Key child : this.children){
+            if(child.getName().equals(Name.CIRCULAR_REFERENCE)){
+                return true;
+            }
             String fieldName = (String)child.getName();
             Field field = child.getContainer().getDeclaredField(fieldName);
             field.setAccessible(true);

@@ -296,4 +296,26 @@ public class PatchTests {
         Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
         assertThat(this.compare.compare(this.patch.patch(new GrandChildEntity(false), diffElement), new GrandChildEntity(false)), is(true));
     }
+
+    @Test
+    public void patchingObjectGraphWithObjectGraphShouldProduceObjectGraph(){
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        assertThat(this.compare.compare(this.patch.patch(new GrandChildEntity(1), diffElement), new GrandChildEntity(2)), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph(){
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce1.setParent(gce2);
+        gce2.setParent(gce1);
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity gce3 = new GrandChildEntity(1);
+        GrandChildEntity gce4 = new GrandChildEntity(2);
+        gce3.setParent(gce4);
+        gce4.setParent(gce3);
+        assertThat(this.compare.compare(this.patch.patch(gce3, diffElement), gce4), is(true));
+    }
 }

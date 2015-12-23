@@ -16,20 +16,24 @@ public class GrandChildEntity extends ChildEntity {
 
     private GrandChildEntity parent;
 
+    public void setParent(GrandChildEntity parent) {
+        this.parent = parent;
+    }
+
     public GrandChildEntity(boolean init){
         super(init);
     }
 
     public GrandChildEntity(){
-        this(ThreadLocalRandom.current().nextInt(1, 11));
+        this(1);
     }
 
     public GrandChildEntity(int sequenceNumber){
-        super(ThreadLocalRandom.current().nextInt(1, 11));
+        super(sequenceNumber+1);
         this.commonInt = sequenceNumber;
         this.commonString = "commonString" + sequenceNumber;
-        commonStaticInt = sequenceNumber;
-        commonStaticString = "commonStaticString" + sequenceNumber;
+        commonStaticInt = 3;
+        commonStaticString = "commonStaticString" + 3;
         this.commonIntArray = new int[sequenceNumber];
         this.commonStringArray = new String[sequenceNumber];
         this.commonStringList = new ArrayList<String>();

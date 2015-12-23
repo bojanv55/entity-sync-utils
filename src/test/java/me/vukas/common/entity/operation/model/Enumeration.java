@@ -20,7 +20,7 @@ public enum Enumeration implements Base {
     Enumeration(boolean init){}
 
     Enumeration(){
-        this(ThreadLocalRandom.current().nextInt(1, 11));
+        this(1);
     }
 
     Enumeration(int sequenceNumber){

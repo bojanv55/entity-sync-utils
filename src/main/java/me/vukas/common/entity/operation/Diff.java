@@ -65,7 +65,7 @@ public class Diff {
         }
 
         if (this.visitedElements.contains(original)) {
-            return null;    //TODO: should we return null or something else on circular reference
+            return new LeafElement<N, T>((N)Name.CIRCULAR_REFERENCE, Element.Status.EQUAL, null, null);    //TODO: should we return null or something else on circular reference
         }
 
         this.visitedElements.push(original);
@@ -107,8 +107,10 @@ public class Diff {
         List<Field> fields = getAllFields(fieldType);
         for (Field field : fields) {
             field.setAccessible(true);
-            Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), field.get(original));
-            Element element = this.diff(field.get(original), field.get(revised), field.getName(), field.getType(), field.getDeclaringClass(), fieldKey);
+            Object originalField = field.get(original);
+            Class originalFieldType = originalField == null ? null : originalField.getClass();
+            Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), originalField);
+            Element element = this.diff(originalField, field.get(revised), field.getName(), originalFieldType, field.getDeclaringClass(), fieldKey);
             elements.add(element);
         }
         return elements;
@@ -124,12 +126,12 @@ public class Diff {
     }
 
     public <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
-        if (value == null || isStringOrPrimitiveOrWrapped(elementType)) {
+        if (value == null || isStringOrPrimitiveOrWrapped(elementType) || Enum.class.isAssignableFrom(elementType)) {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
 
         if(this.visitedKeys.contains(value)){
-            return null;    //TODO: should we return null or something else on circular reference; Can this even happen?
+            return new LeafKey<N, T>((N)Name.CIRCULAR_REFERENCE, elementType, containerType, null);    //TODO: should we return null or something else on circular reference; Can this even happen?
         }
 
         this.visitedKeys.push(value);
