@@ -2,6 +2,7 @@ package me.vukas.common.entity.operation;
 
 import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
+import me.vukas.common.entity.operation.model.GrandChildEntity;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -286,5 +287,13 @@ public class PatchTests {
         map2.put(1, 2);
         Element<Name, Map<Integer, Integer>> diffElement = this.diff.diff(map1, map2);
         assertThat(this.compare.compare(this.patch.patch(map1, diffElement), map2), is(true));
+    }
+
+    @Test
+    public void patchingEmptyObjectGraphWithEmptyObjectGraphShouldProduceObjectGraph(){
+        GrandChildEntity gce1 = new GrandChildEntity(false);
+        GrandChildEntity gce2 = new GrandChildEntity(false);
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        assertThat(this.compare.compare(this.patch.patch(new GrandChildEntity(false), diffElement), new GrandChildEntity(false)), is(true));
     }
 }

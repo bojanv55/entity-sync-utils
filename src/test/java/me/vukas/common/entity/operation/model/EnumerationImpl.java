@@ -3,10 +3,7 @@ package me.vukas.common.entity.operation.model;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public enum Enumeration implements Base {
-    ENUM1,
-    ENUM2;
-
+public class EnumerationImpl implements Base {
     private int commonInt;
     private String commonString;
     private static int commonStaticInt = 1;
@@ -17,13 +14,11 @@ public enum Enumeration implements Base {
     private Set<String> commonStringSet;
     private Map<String, String> commonStringMap;
 
-    Enumeration(boolean init){}
-
-    Enumeration(){
+    EnumerationImpl(){
         this(ThreadLocalRandom.current().nextInt(1, 11));
     }
 
-    Enumeration(int sequenceNumber){
+    EnumerationImpl(int sequenceNumber){
         this.commonInt = sequenceNumber;
         this.commonString = "commonString" + sequenceNumber;
         this.commonIntArray = new int[sequenceNumber];
@@ -42,5 +37,6 @@ public enum Enumeration implements Base {
 
     @Override
     public void base() {
+
     }
 }

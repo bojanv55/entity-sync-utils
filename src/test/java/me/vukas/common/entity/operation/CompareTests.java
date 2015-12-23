@@ -1,5 +1,6 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.entity.operation.model.GrandChildEntity;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -277,6 +278,15 @@ public class CompareTests {
 
     @Test
     public void comparingEmptyObjectGraphsShouldReturnTrue() {
-        //TODO: add tests
+        GrandChildEntity gce1 = new GrandChildEntity(false);
+        GrandChildEntity gce2 = new GrandChildEntity(false);
+        assertThat(this.compare.compare(gce1, gce2), is(true));
+    }
+
+    @Test
+    public void comparingDifferentObjectGraphsShouldReturnFalse() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        assertThat(this.compare.compare(gce1, gce2), is(false));
     }
 }

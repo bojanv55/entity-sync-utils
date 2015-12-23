@@ -1,8 +1,7 @@
 package me.vukas.common.entity.operation.model;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class BaseEntity implements Base {
     private int commonInt;
@@ -54,4 +53,92 @@ public abstract class BaseEntity implements Base {
     private Map<String, String> baseEntityStringMap;
     protected Map<String, String> baseEntityProtectedStringMap;
     public Map<String, String> baseEntityPublicStringMap;
+
+    public BaseEntity(boolean init){}
+
+    public BaseEntity(){
+        this(ThreadLocalRandom.current().nextInt(1, 11));
+    }
+
+    public BaseEntity(int sequenceNumber){
+        this.baseEntityProtectedInt = sequenceNumber;
+        this.baseEntityPublicInt = sequenceNumber;
+        this.commonInt = sequenceNumber;
+        this.baseEntityInt = sequenceNumber;
+
+        this.baseEntityProtectedString = "baseEntityProtectedString" + sequenceNumber;
+        this.baseEntityPublicString = "baseEntityPublicString" + sequenceNumber;
+
+        this.commonString = "commonString" + sequenceNumber;
+        this.baseEntityString = "baseEntityString" + sequenceNumber;
+
+        this.baseEntityProtectedEnumeration = Enumeration.ENUM2;
+        this.baseEntityPublicEnumeration = Enumeration.ENUM1;
+
+        this.commonEnumeration = Enumeration.ENUM2;
+        this.baseEntityEnumeration = Enumeration.ENUM1;
+
+        baseEntityProtectedStaticInt = sequenceNumber;
+        baseEntityPublicStaticInt = sequenceNumber;
+
+        commonStaticInt = sequenceNumber;
+        baseEntityStaticInt = sequenceNumber;
+
+        baseEntityProtectedStaticString = "baseEntityProtectedStaticString" + sequenceNumber;
+        baseEntityPublicStaticString = "baseEntityPublicStaticString" + sequenceNumber;
+
+        commonStaticString = "commonStaticString" + sequenceNumber;
+        baseEntityStaticString = "baseEntityStaticString" + sequenceNumber;
+
+        this.baseEntityProtectedIntArray = new int[sequenceNumber];
+        this.baseEntityPublicIntArray = new int[sequenceNumber];
+        this.commonIntArray = new int[sequenceNumber];
+        this.baseEntityIntArray = new int[sequenceNumber];
+
+        this.baseEntityProtectedStringArray = new String[sequenceNumber];
+        this.baseEntityPublicStringArray = new String[sequenceNumber];
+        this.commonStringArray = new String[sequenceNumber];
+        this.baseEntityStringArray = new String[sequenceNumber];
+
+        this.baseEntityProtectedStringList = new ArrayList<String>();
+        this.baseEntityPublicStringList = new ArrayList<String>();
+        this.commonStringList = new ArrayList<String>();
+        this.baseEntityStringList = new ArrayList<String>();
+
+        this.baseEntityProtectedStringSet = new HashSet<String>();
+        this.baseEntityPublicStringSet = new HashSet<String>();
+        this.commonStringSet = new HashSet<String>();
+        this.baseEntityStringSet = new HashSet<String>();
+
+        this.baseEntityProtectedStringMap = new HashMap<String, String>();
+        this.baseEntityPublicStringMap = new HashMap<String, String>();
+        this.commonStringMap = new HashMap<String, String>();
+        this.baseEntityStringMap = new HashMap<String, String>();
+
+        for(int i=0; i<sequenceNumber; i++){
+            this.baseEntityProtectedIntArray[i] = i;
+            this.baseEntityPublicIntArray[i] = i;
+            this.commonIntArray[i] = i;
+
+            this.baseEntityProtectedStringArray[i] = "baseEntityProtectedStringArray" + i;
+            this.baseEntityPublicStringArray[i] = "baseEntityPublicStringArray" + i;
+            this.commonStringArray[i] = "commonStringArray" + i;
+            this.baseEntityStringArray[i] = "baseEntityStringArray" + i;
+
+            this.baseEntityProtectedStringList.add("baseEntityProtectedStringList" + i);
+            this.baseEntityPublicStringList.add("baseEntityPublicStringList" + i);
+            this.commonStringList.add("commonStringList" + i);
+            this.baseEntityStringList.add("baseEntityStringList" + i);
+
+            this.baseEntityProtectedStringSet.add("baseEntityProtectedStringSet" + i);
+            this.baseEntityPublicStringSet.add("baseEntityPublicStringSet" + i);
+            this.commonStringSet.add("commonStringSet" + i);
+            this.baseEntityStringSet.add("baseEntityStringSet" + i);
+
+            this.baseEntityProtectedStringMap.put("baseEntityProtectedStringMapKey" + i, "baseEntityProtectedStringMapValue" + i);
+            this.baseEntityPublicStringMap.put("baseEntityProtectedStringMapKey"+i, "baseEntityProtectedStringMapValue"+i);
+            this.commonStringMap.put("commonStringMapKey"+i, "commonStringMapValue"+i);
+            this.baseEntityStringMap.put("baseEntityStringMapKey"+i, "baseEntityStringMapValue"+i);
+        }
+    }
 }
