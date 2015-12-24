@@ -309,13 +309,17 @@ public class PatchTests {
     public void patchingObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph(){
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
-        gce1.setParent(gce2);
-        gce2.setParent(gce1);
+        gce1.setParent1(gce2);
+        gce1.setParent2(gce1);
+        gce2.setParent1(gce1);
+        gce2.setParent2(gce1);
         Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
         GrandChildEntity gce3 = new GrandChildEntity(1);
         GrandChildEntity gce4 = new GrandChildEntity(2);
-        gce3.setParent(gce4);
-        gce4.setParent(gce3);
-        assertThat(this.compare.compare(this.patch.patch(gce3, diffElement), gce4), is(true));
+        gce3.setParent1(gce4);
+        gce3.setParent2(gce3);
+        gce4.setParent1(gce3);
+        gce4.setParent2(gce3);
+        assertThat(this.compare.compare(this.patch.patch(gce3, diffElement), gce2), is(true));
     }
 }

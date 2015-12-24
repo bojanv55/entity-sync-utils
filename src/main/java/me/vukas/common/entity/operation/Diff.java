@@ -64,7 +64,7 @@ public class Diff {
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
         }
 
-        if (this.visitedElements.contains(original) /*|| this.visitedKeys.contains(original)*/) {
+        if (this.visitedElements.contains(original) || this.visitedKeys.contains(original)) {
             return new LeafElement<N, T>((N)Name.CIRCULAR_REFERENCE, Element.Status.EQUAL, null, null);    //TODO: should we return null or something else on circular reference
         }
 

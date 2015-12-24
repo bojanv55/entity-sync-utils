@@ -14,10 +14,15 @@ public class GrandChildEntity extends ChildEntity {
     private Set<String> commonStringSet;
     private Map<String, String> commonStringMap;
 
-    private GrandChildEntity parent;
+    private GrandChildEntity parent1;
+    private GrandChildEntity parent2;
 
-    public void setParent(GrandChildEntity parent) {
-        this.parent = parent;
+    public void setParent1(GrandChildEntity parent1) {
+        this.parent1 = parent1;
+    }
+
+    public void setParent2(GrandChildEntity parent2) {
+        this.parent2 = parent2;
     }
 
     public GrandChildEntity(boolean init){

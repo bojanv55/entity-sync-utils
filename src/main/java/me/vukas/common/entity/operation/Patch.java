@@ -54,11 +54,25 @@ public class Patch {
 
         //TODO: must be an object?
         for(Object childElement : ((NodeElement)diff).getChildren()){
-            Field field = ((Element)childElement).getKey().getAccessibleDeclaredFiled();
-            try {
-                field.set(original, this.patch(field.get(original), (Element)childElement));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+            if(!((Element)childElement).getName().equals(Name.CIRCULAR_REFERENCE)) {
+                Key key = ((Element) childElement).getKey();
+                if(!key.getName().equals(Name.CIRCULAR_REFERENCE)) {
+                    Field field = key.getAccessibleDeclaredFiled();
+                    try {
+                        field.set(original, this.patch(field.get(original), (Element) childElement));
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else{
+                    //must be leaf element!
+                    Field field = key.getAccessibleDeclaredFiled((String) ((Element) childElement).getName());
+                    try {
+                        field.set(original, ((LeafElement)childElement).getValue());
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
 
