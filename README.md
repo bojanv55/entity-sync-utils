@@ -29,7 +29,8 @@ Patch patch = new Patch.Builder().registerEntity(entityDefinition).build();
 Compare compare = new Compare.Builder().registerEntity(entityDefinition).build();
 
 Element<Name, GrandChildEntity> diffElement = diff.diff(gce1, gce2);
-boolean areEqual = compare.compare(patch.patch(new GrandChildEntity(1), diffElement), new GrandChildEntity(2));
+GrandChildEntity patchedEntity = patch.patch(new GrandChildEntity(1), diffElement);
+boolean areEqual = compare.compare(patchedEntity, new GrandChildEntity(2));
 ```
 
 The full usage samples are in Test folder of this project.
