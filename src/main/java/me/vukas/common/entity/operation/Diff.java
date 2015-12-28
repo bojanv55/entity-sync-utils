@@ -24,12 +24,10 @@ public class Diff {
     private final Stack<Object> visitedElements = new Stack<Object>();
     private final Stack<Object> visitedKeys = new Stack<Object>();
 
-    private final Map<Object, List<LeafElement>> visitedCircularElements = new HashMap<Object, List<LeafElement>>();
     private final Map<Object, List<LeafKey>> visitedCircularKeys = new HashMap<Object, List<LeafKey>>();
-    public final Map<Object, CircularKey> rootCircularKeys = new HashMap<Object, CircularKey>();
-    private final Map<Object, NodeElement> rootCircularElements = new HashMap<Object, NodeElement>();
+    private final Map<Object, CircularKey> rootCircularKeys = new HashMap<Object, CircularKey>();
 
-    public final Map<Object, Object> visitedElements2 = new HashMap<Object, Object>();
+    private final Map<Object, Object> originalToRevisedElements = new HashMap<Object, Object>();
 
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final List<EntityGeneration<?>> entityGenerations;
@@ -55,9 +53,7 @@ public class Diff {
 
     public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
 
-        //in case key is not subkey of key that is being generated
-        if((this.rootCircularKeys.containsKey(original) || this.rootCircularKeys.containsKey(revised)) && this.visitedElements2.containsKey(original)){
-            //get circular key and register this Leaf circular reference key as circular reference
+        if(this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)){
             LeafElement<N, T> element;
             if (original.equals(revised)) {
                 element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T)Name.CIRCULAR_REFERENCE);
@@ -65,7 +61,7 @@ public class Diff {
             else{
                 element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
             }
-            this.rootCircularKeys.get(original).registerCircularElement(element);
+            this.registerCircularElement(original, element);
             return element;
         }
 
@@ -88,21 +84,7 @@ public class Diff {
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
         }
 
-//        if (this.visitedElements.contains(original) /*|| this.visitedKeys.contains(original)*/) {
-//            LeafElement<N, T> element;
-//            if (original.equals(revised)) {
-//                element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T)Name.CIRCULAR_REFERENCE);
-//            }
-//            else{
-//                element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
-//            }
-////            List<LeafElement> leafElements = this.visitedCircularElements.getOrDefault(original, new ArrayList<LeafElement>());
-////            this.visitedCircularElements.putIfAbsent(original, leafElements);
-////            leafElements.add(element);
-//            this.rootCircularKeys.get(original).registerCircularElement(element);
-//            return element;
-//            //return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, null);    //TODO: should we return null or something else on circular reference
-//        }
+        //TODO: here was if with this.visitedElements.contains(original) - do we need this anymore?
 
         this.visitedElements.push(original);
 
@@ -122,16 +104,14 @@ public class Diff {
             }
         }
 
-        this.visitedElements2.put(original, revised);
+        this.originalToRevisedElements.put(original, revised);
 
         List<Element<?, ?>> elements = this.processFields(fieldType, original, revised);
 
         Element.Status status = determineElementStatus(elements);
 
         this.visitedElements.pop();
-        NodeElement<N, T> element = new NodeElement<N, T>(elementName, status, key, elements);
-//        this.rootCircularElements.put(original, element);
-        return element;
+        return new NodeElement<N, T>(elementName, status, key, elements);
     }
 
     private <T> List<Element<?, ?>> processFields(Class fieldType, T original, T revised) {
@@ -163,6 +143,21 @@ public class Diff {
             }
         }
         return Element.Status.EQUAL;
+    }
+
+    public <T> T getRevisedIfCircularReference(T original){
+        if(this.originalToRevisedElements.containsKey(original)){
+            return (T)this.originalToRevisedElements.get(original);
+        }
+        return original;
+    }
+
+    public <T> boolean isCircularReferenced(T original){
+        return this.originalToRevisedElements.containsKey(original);
+    }
+
+    public <T> void registerCircularElement(T original, LeafElement element){
+        this.rootCircularKeys.get(original).registerCircularElement(element);
     }
 
     public <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
