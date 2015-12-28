@@ -1,5 +1,37 @@
-# entity-sync-utils
+## entity-sync-utils - Java object graph diff/patch/compare utilities
 
-Simple library to find diff between two Java object graphs. It takes two objects as input and generates diff object graph that can be later used for patching the same object. It supports ordered collections and preserves order. All objects are by deafault treated as Value Objects, but it can be also treated as Entity - you just have to define what to treat as the key. It supporst repeting elements and recursive structures.
+Simple Java library that can be used to diff two Java object graphs (including primitive/object Arrays, Lists, Sets, Maps...). It will try to compare collections as ordered but if it detects that order is not preserved it will fall back to unordered comparison mode. After the diff is created, the same diff can be applied as patch on existing object. All object are treated by default as Value Objects (each field in the object is treated as a key). This can be overridden using EntityDefinition - this way you can set one or multiple properties to be treated as Entity key (e.g. "id"). Full recursive structures are supported (circular references).
 
-Needs still some testing and upgrades...
+## List of features
+
+* Compare arbitrary Java object graph, generate Diff and apply it as a Patch on existing object
+* Support for recursive structures
+* Maintains order in Arrays and Lists and supports arbitrary order in Sets (and other unordered collections)
+* No need for modification of existing POJOs
+
+## How to use it?
+
+Suppose you have following object hierarchy: BaseEntity <- ChildEntity <- GrandChildEntity with following properties (per class in hierarchy)
+
+* BaseEntity properties ("id", "someBaseString")
+* ChildEntity properties ("someChildString")
+* GrandChildEntity properties ("id", "someGrandChildString")
+
+Suppose you want to use two "id" properties (from BaseEntity and from GrandChildEntity) as key properties. If you want to make diff, apply as patch and compare if the results after patching is correct (using compare) it would look like this piece of code:
+
+```java
+GrandChildEntity gce1 = new GrandChildEntity(1);
+GrandChildEntity gce2 = new GrandChildEntity(2);
+
+EntityDefinition entityDefinition = new EntityDefinition(GrandChildEntity.class, "id").registerSuperclass(BaseEntity.class, "id");
+Diff diff = new Diff.Builder().registerEntity(entityDefinition).build();
+Patch patch = new Patch.Builder().registerEntity(entityDefinition).build();
+Compare compare = new Compare.Builder().registerEntity(entityDefinition).build();
+
+Element<Name, GrandChildEntity> diffElement = diff.diff(gce1, gce2);
+boolean areEqual = compare.compare(patch.patch(new GrandChildEntity(1), diffElement), new GrandChildEntity(2));
+```
+
+The full usage samples are in Test folder of this project.
+
+Library is still under development, but it can be already used for diff, patch and compare operations on object graphs.

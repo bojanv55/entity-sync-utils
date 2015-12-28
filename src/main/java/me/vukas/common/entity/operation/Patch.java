@@ -2,13 +2,11 @@ package me.vukas.common.entity.operation;
 
 import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.EntityGeneration;
-import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
-import me.vukas.common.entity.key.Key;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -54,25 +52,11 @@ public class Patch {
 
         //TODO: must be an object?
         for(Object childElement : ((NodeElement)diff).getChildren()){
-            if(!((Element)childElement).getName().equals(Name.CIRCULAR_REFERENCE)) {
-                Key key = ((Element) childElement).getKey();
-                if(!key.getName().equals(Name.CIRCULAR_REFERENCE)) {
-                    Field field = key.getAccessibleDeclaredFiled();
-                    try {
-                        field.set(original, this.patch(field.get(original), (Element) childElement));
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else{
-                    //must be leaf element!
-                    Field field = key.getAccessibleDeclaredFiled((String) ((Element) childElement).getName());
-                    try {
-                        field.set(original, ((LeafElement)childElement).getValue());
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
+            Field field = ((Element)childElement).getKey().getAccessibleDeclaredFiled();
+            try {
+                field.set(original, this.patch(field.get(original), (Element)childElement));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
         }
 
