@@ -1,5 +1,7 @@
 package me.vukas.common.base;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,7 +114,6 @@ public class Arrays {
         }
     }
 
-    //TODO: add all implementation
     public static Object unwrap(Object[] array){
         if(array == null){
             return null;
@@ -123,7 +124,29 @@ public class Arrays {
                 arrayLength++;
             }
         }
-        if(array instanceof Integer[]){
+        if(array instanceof Byte[]){
+            byte[] unwrappedArray = new byte[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Byte)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        else if(array instanceof Short[]){
+            short[] unwrappedArray = new short[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Short)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        else if(array instanceof Integer[]){
             int[] unwrappedArray = new int[arrayLength];
             int unwrappedIndex = 0;
             for(int i = 0; i < array.length; i++){
@@ -134,7 +157,62 @@ public class Arrays {
             }
             return unwrappedArray;
         }
-        return null;    //TODO: should cover all rest of the cases
+        else if(array instanceof Long[]){
+            long[] unwrappedArray = new long[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Long)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        else if(array instanceof Float[]){
+            float[] unwrappedArray = new float[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Float)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        else if(array instanceof Double[]){
+            double[] unwrappedArray = new double[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Double)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        else if(array instanceof Boolean[]){
+            boolean[] unwrappedArray = new boolean[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Boolean)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        else if(array instanceof Character[]){
+            char[] unwrappedArray = new char[arrayLength];
+            int unwrappedIndex = 0;
+            for(int i = 0; i < array.length; i++){
+                if(array[i]!=null){
+                    unwrappedArray[unwrappedIndex] = (Character)array[i];
+                    unwrappedIndex++;
+                }
+            }
+            return unwrappedArray;
+        }
+        return array;
     }
 
     public static Object[] wrap(Object array) {

@@ -14,14 +14,6 @@ public class MapEntryNodeKey<N> extends Key<N, Map.Entry> {
         this.keyValue = keyValue;
     }
 
-    public Key<?, ?> getKeyKey() {
-        return keyKey;
-    }
-
-    public Key<?, ?> getKeyValue() {
-        return keyValue;
-    }
-
     @Override
     public boolean match(Map.Entry value) {
         return keyKey.match(value.getKey()) && keyValue.match(value.getValue());
