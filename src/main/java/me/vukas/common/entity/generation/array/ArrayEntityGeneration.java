@@ -1,6 +1,7 @@
 package me.vukas.common.entity.generation.array;
 
 import me.vukas.common.entity.EntityGeneration;
+import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
@@ -45,9 +46,9 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
             Class elementType = originalArray[i] == null ? null : originalArray[i].getClass();
             Key<Integer, Object> elementKey = this.getDiff().generateKey(i, elementType, fieldType, originalArray[i]);
             for (int j = 0; j < revisedArray.length; j++) {
-                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], revisedArray[j])) {
+                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], transformObjectIfCircular(revisedArray[j]))) {
                     matchedIndexes.add(j);
-                    Element<Integer, Object> element = this.getDiff().diff(originalArray[i], revisedArray[j], j, elementType, fieldType, elementKey);
+                    Element<Integer, Object> element = this.getDiff().diff(originalArray[i], transformObjectIfCircular(revisedArray[j]), j, elementType, fieldType, elementKey);
                     if (i != j) {
                         if (element.getStatus() == Element.Status.EQUAL) {
                             element.setStatus(Element.Status.EQUAL_MOVED);
@@ -64,7 +65,16 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
         for (int j = 0; j < revisedArray.length; j++) {
             if (!matchedIndexes.contains(j)) {
-                elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, revisedArray[j]));
+
+                if(this.getDiff().rootCircularKeys.containsKey(revisedArray[j]) /*&& this.getDiff().visitedElements2.containsKey(revisedArray[j])*/){
+                    LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, (T) Name.CIRCULAR_REFERENCE);
+                    elements.add(element);
+                    this.getDiff().rootCircularKeys.get(revisedArray[j]).registerCircularElement(element);
+                }
+                else {
+                    elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, transformObjectIfCircular(revisedArray[j])));
+                }
+
             }
         }
 
@@ -72,6 +82,13 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
         Key<N, T> arrayKey = this.generateKey(elementName, fieldType, containerType, original);
         return new NodeElement<N, T>(elementName, status, arrayKey, elements);
+    }
+
+    public Object transformObjectIfCircular(Object o){
+        if(this.getDiff().visitedElements2.containsKey(o)){
+            return this.getDiff().visitedElements2.get(o);
+        }
+        return o;
     }
 
     @Override

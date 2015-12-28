@@ -9,6 +9,7 @@ import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
+import me.vukas.common.entity.key.CircularKey;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.key.LeafKey;
 import me.vukas.common.entity.key.NodeKey;
@@ -22,6 +23,14 @@ public class Diff {
     private Compare compare;
     private final Stack<Object> visitedElements = new Stack<Object>();
     private final Stack<Object> visitedKeys = new Stack<Object>();
+
+    private final Map<Object, List<LeafElement>> visitedCircularElements = new HashMap<Object, List<LeafElement>>();
+    private final Map<Object, List<LeafKey>> visitedCircularKeys = new HashMap<Object, List<LeafKey>>();
+    public final Map<Object, CircularKey> rootCircularKeys = new HashMap<Object, CircularKey>();
+    private final Map<Object, NodeElement> rootCircularElements = new HashMap<Object, NodeElement>();
+
+    public final Map<Object, Object> visitedElements2 = new HashMap<Object, Object>();
+
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final List<EntityGeneration<?>> entityGenerations;
 
@@ -45,6 +54,21 @@ public class Diff {
     }
 
     public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
+
+        //in case key is not subkey of key that is being generated
+        if((this.rootCircularKeys.containsKey(original) || this.rootCircularKeys.containsKey(revised)) && this.visitedElements2.containsKey(original)){
+            //get circular key and register this Leaf circular reference key as circular reference
+            LeafElement<N, T> element;
+            if (original.equals(revised)) {
+                element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T)Name.CIRCULAR_REFERENCE);
+            }
+            else{
+                element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
+            }
+            this.rootCircularKeys.get(original).registerCircularElement(element);
+            return element;
+        }
+
         if (original == revised) {
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
@@ -64,9 +88,21 @@ public class Diff {
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
         }
 
-        if (this.visitedElements.contains(original) /*|| this.visitedKeys.contains(original)*/) {
-            return new LeafElement<N, T>((N)Name.CIRCULAR_REFERENCE, Element.Status.EQUAL, null, null);    //TODO: should we return null or something else on circular reference
-        }
+//        if (this.visitedElements.contains(original) /*|| this.visitedKeys.contains(original)*/) {
+//            LeafElement<N, T> element;
+//            if (original.equals(revised)) {
+//                element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T)Name.CIRCULAR_REFERENCE);
+//            }
+//            else{
+//                element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
+//            }
+////            List<LeafElement> leafElements = this.visitedCircularElements.getOrDefault(original, new ArrayList<LeafElement>());
+////            this.visitedCircularElements.putIfAbsent(original, leafElements);
+////            leafElements.add(element);
+//            this.rootCircularKeys.get(original).registerCircularElement(element);
+//            return element;
+//            //return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, null);    //TODO: should we return null or something else on circular reference
+//        }
 
         this.visitedElements.push(original);
 
@@ -86,12 +122,16 @@ public class Diff {
             }
         }
 
+        this.visitedElements2.put(original, revised);
+
         List<Element<?, ?>> elements = this.processFields(fieldType, original, revised);
 
         Element.Status status = determineElementStatus(elements);
 
         this.visitedElements.pop();
-        return new NodeElement<N, T>(elementName, status, key, elements);
+        NodeElement<N, T> element = new NodeElement<N, T>(elementName, status, key, elements);
+//        this.rootCircularElements.put(original, element);
+        return element;
     }
 
     private <T> List<Element<?, ?>> processFields(Class fieldType, T original, T revised) {
@@ -130,8 +170,21 @@ public class Diff {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
 
+        //in case key is not subkey of key that is being generated
+        if(this.rootCircularKeys.containsKey(value)){
+            //get circular key and register this Leaf circular reference key as circular reference
+            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);
+            this.rootCircularKeys.get(value).registerCircularKey(key);
+            return key;
+        }
+
+        //in case key is subkey of key that is being generated
         if(this.visitedElements.contains(value) || this.visitedKeys.contains(value)){
-            return new LeafKey<N, T>((N)Name.CIRCULAR_REFERENCE, elementType, containerType, null);    //TODO: should we return null or something else on circular reference; Can this even happen?
+            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);    //TODO: should we return null or something else on circular reference; Can this even happen?
+            List<LeafKey> leafKeys = this.visitedCircularKeys.getOrDefault(value, new ArrayList<LeafKey>());
+            this.visitedCircularKeys.putIfAbsent(value, leafKeys);
+            leafKeys.add(key);
+            return key;
         }
 
         this.visitedKeys.push(value);
@@ -174,7 +227,15 @@ public class Diff {
         }
 
         this.visitedKeys.pop();
-        return new NodeKey<N, T>(elementName, elementType, containerType, keys);
+        NodeKey<N, T> key = new NodeKey<N, T>(elementName, elementType, containerType, keys);
+        if(this.visitedCircularKeys.containsKey(value)){
+            for(LeafKey leafKey : this.visitedCircularKeys.get(value)){
+                key.registerCircularKey(leafKey);
+            }
+            this.visitedCircularKeys.remove(value); //TODO: maybe not needed
+        }
+        this.rootCircularKeys.put(value, key);
+        return key;
     }
 
     public static class Builder {

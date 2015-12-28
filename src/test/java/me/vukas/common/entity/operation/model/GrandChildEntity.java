@@ -1,7 +1,6 @@
 package me.vukas.common.entity.operation.model;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class GrandChildEntity extends ChildEntity {
     private int commonInt;
@@ -14,10 +13,21 @@ public class GrandChildEntity extends ChildEntity {
     private Set<String> commonStringSet;
     private Map<String, String> commonStringMap;
 
-    private GrandChildEntity parent;
+    private GrandChildEntity parent1;
+    private GrandChildEntity parent2;
 
-    public void setParent(GrandChildEntity parent) {
-        this.parent = parent;
+    private List<GrandChildEntity> parents;
+
+    public void setParent1(GrandChildEntity parent1) {
+        this.parent1 = parent1;
+    }
+
+    public void setParent2(GrandChildEntity parent2) {
+        this.parent2 = parent2;
+    }
+
+    public void addParent(GrandChildEntity parent){
+        this.parents.add(parent);
     }
 
     public GrandChildEntity(boolean init){
@@ -46,5 +56,7 @@ public class GrandChildEntity extends ChildEntity {
             this.commonStringSet.add("commonStringSet" + i);
             this.commonStringMap.put("commonStringMapKey"+i, "commonStringMapValue"+i);
         }
+
+        this.parents = new ArrayList<GrandChildEntity>();
     }
 }
