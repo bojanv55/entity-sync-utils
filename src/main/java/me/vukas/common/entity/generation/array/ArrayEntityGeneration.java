@@ -1,6 +1,7 @@
 package me.vukas.common.entity.generation.array;
 
 import me.vukas.common.entity.EntityGeneration;
+import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
@@ -45,9 +46,9 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
             Class elementType = originalArray[i] == null ? null : originalArray[i].getClass();
             Key<Integer, Object> elementKey = this.getDiff().generateKey(i, elementType, fieldType, originalArray[i]);
             for (int j = 0; j < revisedArray.length; j++) {
-                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], revisedArray[j])) {
+                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]))) {
                     matchedIndexes.add(j);
-                    Element<Integer, Object> element = this.getDiff().diff(originalArray[i], revisedArray[j], j, elementType, fieldType, elementKey);
+                    Element<Integer, Object> element = this.getDiff().diff(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
                     if (i != j) {
                         if (element.getStatus() == Element.Status.EQUAL) {
                             element.setStatus(Element.Status.EQUAL_MOVED);
@@ -64,7 +65,14 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
         for (int j = 0; j < revisedArray.length; j++) {
             if (!matchedIndexes.contains(j)) {
-                elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, revisedArray[j]));
+                if(this.getDiff().isCircularReferenced(revisedArray[j])){
+                    LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
+                    elements.add(element);
+                    this.getDiff().registerCircularElement(this.getDiff().getRevisedIfCircularReference(revisedArray[j]), element);
+                }
+                else {
+                    elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, this.getDiff().getRevisedIfCircularReference(revisedArray[j])));
+                }
             }
         }
 

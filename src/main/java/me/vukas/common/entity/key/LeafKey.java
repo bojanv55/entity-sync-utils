@@ -1,7 +1,9 @@
 package me.vukas.common.entity.key;
 
+import me.vukas.common.entity.Name;
+
 public class LeafKey<N, V> extends Key<N, V> {
-    private final V value;
+    private V value;
 
     public LeafKey(N name, Class type, Class container, V value) {
         super(name, type, container);
@@ -12,8 +14,12 @@ public class LeafKey<N, V> extends Key<N, V> {
         return value;
     }
 
+    public void setValue(V value){
+        this.value = value;
+    }
+
     @Override
     public boolean match(V value) {
-        return this.value == value || this.value.equals(value);
+        return this.value == value || this.value!=null && (this.value.equals(value) || this.value.equals(Name.CIRCULAR_REFERENCE));
     }
 }
