@@ -1,5 +1,6 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.base.MapStack;
 import me.vukas.common.entity.EntityComparison;
 import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
@@ -13,7 +14,7 @@ import static me.vukas.common.base.Objects.getAllFields;
 import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
 
 public class Compare {
-    private final Stack<Object> visitedElements = new Stack<Object>();
+    private final MapStack<Object, Object> visitedElements = new MapStack<Object, Object>();
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final List<EntityComparison<?>> entityComparisons;
 
@@ -44,10 +45,10 @@ public class Compare {
             return entity1.equals(entity2);
         }
 
-        if(this.visitedElements.contains(entity1)){
+        if(this.visitedElements.containsKeyAndValuePair(entity1, entity2)){
             return true;
         }
-        this.visitedElements.push(entity1);
+        this.visitedElements.push(entity1, entity2);
 
         if(fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)){
             EntityComparison<T> entityComparison = new ArrayEntityGeneration<T>(this);

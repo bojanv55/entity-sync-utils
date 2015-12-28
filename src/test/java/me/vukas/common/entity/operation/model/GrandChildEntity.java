@@ -16,7 +16,10 @@ public class GrandChildEntity extends ChildEntity {
     private GrandChildEntity parent1;
     private GrandChildEntity parent2;
 
-    private List<GrandChildEntity> parents;
+    private GrandChildEntity[] parentsArray;
+    private List<GrandChildEntity> parentsList;
+    private Set<GrandChildEntity> parentsSet;
+    private Map<GrandChildEntity, GrandChildEntity> parentsMap;
 
     public void setParent1(GrandChildEntity parent1) {
         this.parent1 = parent1;
@@ -26,8 +29,20 @@ public class GrandChildEntity extends ChildEntity {
         this.parent2 = parent2;
     }
 
-    public void addParent(GrandChildEntity parent){
-        this.parents.add(parent);
+    public void addParentInArray(int index, GrandChildEntity parent){
+        this.parentsArray[index] = parent;
+    }
+
+    public void addParentInList(GrandChildEntity parent){
+        this.parentsList.add(parent);
+    }
+
+    public void addParentInSet(GrandChildEntity parent){
+        this.parentsSet.add(parent);
+    }
+
+    public void addParentsInMap(GrandChildEntity key, GrandChildEntity value){
+        this.parentsMap.put(key, value);
     }
 
     public GrandChildEntity(boolean init){
@@ -57,6 +72,9 @@ public class GrandChildEntity extends ChildEntity {
             this.commonStringMap.put("commonStringMapKey"+i, "commonStringMapValue"+i);
         }
 
-        this.parents = new ArrayList<GrandChildEntity>();
+        this.parentsArray = new GrandChildEntity[sequenceNumber];
+        this.parentsList = new ArrayList<GrandChildEntity>();
+        this.parentsSet = new HashSet<GrandChildEntity>();
+        this.parentsMap = new HashMap<GrandChildEntity, GrandChildEntity>();
     }
 }

@@ -165,17 +165,14 @@ public class Diff {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
 
-        //in case key is not subkey of key that is being generated
         if(this.rootCircularKeys.containsKey(value)){
-            //get circular key and register this Leaf circular reference key as circular reference
             LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);
             this.rootCircularKeys.get(value).registerCircularKey(key);
             return key;
         }
 
-        //in case key is subkey of key that is being generated
         if(this.visitedElements.contains(value) || this.visitedKeys.contains(value)){
-            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);    //TODO: should we return null or something else on circular reference; Can this even happen?
+            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);
             List<LeafKey> leafKeys = this.visitedCircularKeys.getOrDefault(value, new ArrayList<LeafKey>());
             this.visitedCircularKeys.putIfAbsent(value, leafKeys);
             leafKeys.add(key);
@@ -227,7 +224,7 @@ public class Diff {
             for(LeafKey leafKey : this.visitedCircularKeys.get(value)){
                 key.registerCircularKey(leafKey);
             }
-            this.visitedCircularKeys.remove(value); //TODO: maybe not needed
+            //this.visitedCircularKeys.remove(value); //TODO: maybe not needed
         }
         this.rootCircularKeys.put(value, key);
         return key;
