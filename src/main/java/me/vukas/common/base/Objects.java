@@ -1,5 +1,6 @@
 package me.vukas.common.base;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -75,45 +76,37 @@ public class Objects {
         } else if (type == Character.class) {
             return (T) new Character('\u0000');
         }
-        return null;
+        return createNewObjectOfType(type);
     }
 
     public static  <T> T createNewObjectOfType(Class<T> type){
         if(type != null) {
             try {
-                //return type.newInstance();
-                return getFirstConstructor(type).newInstance();
+                if(type.isArray()){
+                    return (T) Array.newInstance(type.getComponentType(), 0);
+                }
+
+                int numberOfConstructorParams = Integer.MAX_VALUE;
+                Object[] parameters = null;
+                Constructor constructor = null;
+
+                for(Constructor declaredConstructor : type.getDeclaredConstructors()){
+                    Class[] paramTypes = declaredConstructor.getParameterTypes();
+                    if(paramTypes.length<numberOfConstructorParams) {
+                        constructor = declaredConstructor;
+                        numberOfConstructorParams = paramTypes.length;
+                        parameters = new Object[numberOfConstructorParams];
+                        for (int i = 0; i < numberOfConstructorParams; i++) {
+                            parameters[i] = defaultValue(getWrappedClass(paramTypes[i]));
+                        }
+                    }
+                }
+
+                return (T) constructor.newInstance(parameters);
             } catch (Exception e) {
                 throw new UnsupportedOperationException(e);
             }
         }
         return null;
-    }
-
-    static <C> Constructor<C> getFirstConstructor(Class<C> c){
-//        for(Constructor con : c.getDeclaredConstructors()){
-//            Class[] types = con.getParameterTypes();
-//            boolean match = true;
-//            for(int i = 0; i < types.length; i++){
-//                Class need = types[i], got = initArgs[i].getClass();
-//                if(!need.isAssignableFrom(got)){
-//                    if(need.isPrimitive()){
-//                        match = (int.class.equals(need) && Integer.class.equals(got))
-//                                || (long.class.equals(need) && Long.class.equals(got))
-//                                || (char.class.equals(need) && Character.class.equals(got))
-//                                || (short.class.equals(need) && Short.class.equals(got))
-//                                || (boolean.class.equals(need) && Boolean.class.equals(got))
-//                                || (byte.class.equals(need) && Byte.class.equals(got));
-//                    }else{
-//                        match = false;
-//                    }
-//                }
-//                if(!match)
-//                    break;
-//            }
-//            if(match)
-//                return con;
-//        }
-        throw new IllegalArgumentException("Cannot find an appropriate constructor for class " + c);
     }
 }

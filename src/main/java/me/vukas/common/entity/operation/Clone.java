@@ -20,8 +20,9 @@ public class Clone {
         this.patch = new Patch.Builder().build();
     }
 
-    public <T> T clone(T original, Class<T> originalType){
-        return this.patch.patch(Objects.createNewObjectOfType(originalType), this.diff.diff(Objects.createNewObjectOfType(originalType), original));
+    public <T> T clone(T original){
+        Class originalClass = original == null ? null : original.getClass();
+        return (T) this.patch.patch(Objects.createNewObjectOfType(originalClass), this.diff.diff(Objects.createNewObjectOfType(originalClass), original));
     }
 
     public static class Builder {
