@@ -1,6 +1,7 @@
 package me.vukas.common.entity.operation;
 
 import me.vukas.common.entity.EntityDefinition;
+import me.vukas.common.entity.IgnoredFields;
 import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.operation.model.BaseEntity;
@@ -438,8 +439,8 @@ public class PatchTests {
 
         EntityDefinition entityDefinition = new EntityDefinition(GrandChildEntity.class, "commonInt", "commonString");
         Diff diff = new Diff.Builder().registerEntity(entityDefinition).build();
-        Patch patch = new Patch.Builder().registerEntity(entityDefinition).build();
-        Compare compare = new Compare.Builder().registerEntity(entityDefinition).build();
+        Patch patch = new Patch.Builder().build();
+        Compare compare = new Compare.Builder().build();
 
         Element<Name, GrandChildEntity> diffElement = diff.diff(gce1, gce2);
         GrandChildEntity patched = patch.patch(gce3, diffElement);
@@ -453,10 +454,27 @@ public class PatchTests {
 
         EntityDefinition entityDefinition = new EntityDefinition(GrandChildEntity.class, "commonInt", "commonString").registerSuperclass(BaseEntity.class, "commonInt");
         Diff diff = new Diff.Builder().registerEntity(entityDefinition).build();
-        Patch patch = new Patch.Builder().registerEntity(entityDefinition).build();
-        Compare compare = new Compare.Builder().registerEntity(entityDefinition).build();
+        Patch patch = new Patch.Builder().build();
+        Compare compare = new Compare.Builder().build();
 
         Element<Name, GrandChildEntity> diffElement = diff.diff(gce1, gce2);
         assertThat(compare.compare(patch.patch(new GrandChildEntity(1), diffElement), new GrandChildEntity(2)), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectGraphUsingPartialKeyAndIgnoredFieldsShouldPatchPartialObjectGraph(){
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce2.setParent1(gce2);
+
+        EntityDefinition entityDefinition = new EntityDefinition(GrandChildEntity.class, "commonInt", "commonString").registerSuperclass(BaseEntity.class, "commonInt");
+        IgnoredFields ignoredFields = new IgnoredFields(GrandChildEntity.class, "parent1", "parent2");
+        Diff diff = new Diff.Builder().registerEntity(entityDefinition).ignoreFields(ignoredFields).build();
+        Patch patch = new Patch.Builder().build();
+        Compare compare = new Compare.Builder().build();
+
+        Element<Name, GrandChildEntity> diffElement = diff.diff(gce1, gce2);
+        GrandChildEntity patched = patch.patch(new GrandChildEntity(1), diffElement);
+        assertThat(compare.compare(patched, gce2), is(false));  //parent1 in patched object will be null, since this field is ignored
     }
 }

@@ -1,5 +1,7 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.entity.IgnoredFields;
+import me.vukas.common.entity.operation.model.ChildEntity;
 import me.vukas.common.entity.operation.model.GrandChildEntity;
 import org.junit.Before;
 import org.junit.Test;
@@ -288,5 +290,21 @@ public class CompareTests {
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
         assertThat(this.compare.compare(gce1, gce2), is(false));
+    }
+
+    @Test
+    public void comparingDifferentObjectGraphsWithIgnoredFieldsShouldReturnTrue() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(1);
+        gce1.setParent1(gce2);
+        gce2.setParent2(gce1);
+        gce1.setParent(gce2);
+        gce2.setParent(null);
+
+        Compare compare = new Compare.Builder()
+                .ignoreFields(new IgnoredFields(GrandChildEntity.class, "parent1", "parent2").registerSuperclass(ChildEntity.class, "parent"))
+                .build();
+
+        assertThat(compare.compare(gce1, gce2), is(true));
     }
 }

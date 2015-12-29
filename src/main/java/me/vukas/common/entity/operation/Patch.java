@@ -12,13 +12,10 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class Patch {
-    private final Stack<Object> patchedElements = new Stack<Object>();
-    private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final List<EntityGeneration<?>> entityGenerations;
 
     @SuppressWarnings("unchecked")
     private Patch(Builder builder) {
-        this.typesToEntityDefinitions = builder.typesToEntityDefinitions;
         this.entityGenerations = builder.entityGenerations;
 
         for (EntityGeneration entityGeneration : this.entityGenerations) {
@@ -64,31 +61,10 @@ public class Patch {
     }
 
     public static class Builder {
-        private final Map<Class, EntityDefinition> typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
         private final List<EntityGeneration<?>> entityGenerations = new ArrayList<EntityGeneration<?>>();
 
         public Builder() {
             this.registerInternalEntityGenerations();
-        }
-
-        public Builder(List<EntityDefinition> entityDefinitions, List<EntityGeneration<?>> entityGenerations) {
-            this();
-            for (EntityDefinition entityDefinition : entityDefinitions) {
-                this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
-            }
-            this.entityGenerations.addAll(entityGenerations);
-        }
-
-        public Builder registerEntity(EntityDefinition entityDefinition) {
-            this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
-            return this;
-        }
-
-        public Builder registerEntities(List<EntityDefinition> entityDefinitions) {
-            for (EntityDefinition entityDefinition : entityDefinitions) {
-                this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
-            }
-            return this;
         }
 
         public Builder registerEntityGeneration(EntityGeneration entityGeneration) {

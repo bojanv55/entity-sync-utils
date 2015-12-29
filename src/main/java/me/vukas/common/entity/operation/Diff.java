@@ -1,9 +1,6 @@
 package me.vukas.common.entity.operation;
 
-import me.vukas.common.entity.EntityComparison;
-import me.vukas.common.entity.EntityDefinition;
-import me.vukas.common.entity.EntityGeneration;
-import me.vukas.common.entity.Name;
+import me.vukas.common.entity.*;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
@@ -30,19 +27,22 @@ public class Diff {
     private final Map<Object, Object> originalToRevisedElements = new HashMap<Object, Object>();
 
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
+    private final Map<Class, IgnoredFields> typesToIgnoredFields;
     private final List<EntityGeneration<?>> entityGenerations;
 
     @SuppressWarnings("unchecked")
     private Diff(Builder builder) {
         this.typesToEntityDefinitions = builder.typesToEntityDefinitions;
         this.entityGenerations = builder.entityGenerations;
+        this.typesToIgnoredFields = builder.typesToIgnoredFields;
 
         for (EntityGeneration entityGeneration : this.entityGenerations) {
             entityGeneration.setDiff(this);
         }
 
-        this.compare = new Compare.Builder(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()),
-                (List<EntityComparison<?>>) (List<?>) this.entityGenerations).build();
+        this.compare = new Compare.Builder()
+                .registerEntities(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()))
+                .registerEntityGenerations((List<EntityComparison<?>>) (List<?>) this.entityGenerations).build();
     }
 
     public <T> Element<Name, T> diff(T original, T revised) {
@@ -126,14 +126,20 @@ public class Diff {
         List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
         List<Field> fields = getAllFields(fieldType);
         for (Field field : fields) {
-            field.setAccessible(true);
-            Object originalField = field.get(original);
-            Class originalFieldType = originalField == null ? null : originalField.getClass();
-            Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), originalField);
-            Element element = this.diff(originalField, field.get(revised), field.getName(), originalFieldType, field.getDeclaringClass(), fieldKey);
-            elements.add(element);
+            if(shouldDiffField(fieldType, field.getDeclaringClass(), field)) {
+                field.setAccessible(true);
+                Object originalField = field.get(original);
+                Class originalFieldType = originalField == null ? null : originalField.getClass();
+                Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), originalField);
+                Element element = this.diff(originalField, field.get(revised), field.getName(), originalFieldType, field.getDeclaringClass(), fieldKey);
+                elements.add(element);
+            }
         }
         return elements;
+    }
+
+    private boolean shouldDiffField(Class container, Class declaring, Field field) {
+        return !(this.typesToIgnoredFields.containsKey(container) && this.typesToIgnoredFields.get(container).containsField(declaring, field.getName()));
     }
 
     public static Element.Status determineElementStatus(List<Element<?, ?>> children) {
@@ -232,18 +238,11 @@ public class Diff {
 
     public static class Builder {
         private final Map<Class, EntityDefinition> typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
+        private final Map<Class, IgnoredFields> typesToIgnoredFields = new HashMap<Class, IgnoredFields>();
         private final List<EntityGeneration<?>> entityGenerations = new ArrayList<EntityGeneration<?>>();
 
         public Builder() {
             this.registerInternalEntityGenerations();
-        }
-
-        public Builder(List<EntityDefinition> entityDefinitions, List<EntityGeneration<?>> entityGenerations) {
-            this();
-            for (EntityDefinition entityDefinition : entityDefinitions) {
-                this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
-            }
-            this.entityGenerations.addAll(entityGenerations);
         }
 
         public Builder registerEntity(EntityDefinition entityDefinition) {
@@ -255,6 +254,11 @@ public class Diff {
             for (EntityDefinition entityDefinition : entityDefinitions) {
                 this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
             }
+            return this;
+        }
+
+        public Builder ignoreFields(IgnoredFields ignoredFields) {
+            this.typesToIgnoredFields.putIfAbsent(ignoredFields.getType(), ignoredFields);
             return this;
         }
 

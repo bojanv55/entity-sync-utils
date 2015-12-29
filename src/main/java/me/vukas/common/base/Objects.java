@@ -1,5 +1,6 @@
 package me.vukas.common.base;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,5 +55,65 @@ public class Objects {
             fields.addAll(getAllFields(type.getSuperclass()));
         }
         return fields;
+    }
+
+    public static <T> T defaultValue(Class<T> type){
+        if (type == Byte.class) {
+            return (T) new Byte((byte) 0);
+        } else if (type == Short.class) {
+            return (T) new Short((short) 0);
+        } else if (type == Integer.class) {
+            return (T) new Integer(0);
+        } else if (type == Long.class) {
+            return (T) new Long(0);
+        } else if (type == Float.class) {
+            return (T) new Float(0);
+        } else if (type == Double.class) {
+            return (T) new Double(0);
+        } else if (type == Boolean.class) {
+            return (T) new Boolean(false);
+        } else if (type == Character.class) {
+            return (T) new Character('\u0000');
+        }
+        return null;
+    }
+
+    public static  <T> T createNewObjectOfType(Class<T> type){
+        if(type != null) {
+            try {
+                //return type.newInstance();
+                return getFirstConstructor(type).newInstance();
+            } catch (Exception e) {
+                throw new UnsupportedOperationException(e);
+            }
+        }
+        return null;
+    }
+
+    static <C> Constructor<C> getFirstConstructor(Class<C> c){
+//        for(Constructor con : c.getDeclaredConstructors()){
+//            Class[] types = con.getParameterTypes();
+//            boolean match = true;
+//            for(int i = 0; i < types.length; i++){
+//                Class need = types[i], got = initArgs[i].getClass();
+//                if(!need.isAssignableFrom(got)){
+//                    if(need.isPrimitive()){
+//                        match = (int.class.equals(need) && Integer.class.equals(got))
+//                                || (long.class.equals(need) && Long.class.equals(got))
+//                                || (char.class.equals(need) && Character.class.equals(got))
+//                                || (short.class.equals(need) && Short.class.equals(got))
+//                                || (boolean.class.equals(need) && Boolean.class.equals(got))
+//                                || (byte.class.equals(need) && Byte.class.equals(got));
+//                    }else{
+//                        match = false;
+//                    }
+//                }
+//                if(!match)
+//                    break;
+//            }
+//            if(match)
+//                return con;
+//        }
+        throw new IllegalArgumentException("Cannot find an appropriate constructor for class " + c);
     }
 }
