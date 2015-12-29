@@ -1,5 +1,6 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.base.MapStack;
 import me.vukas.common.entity.*;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
@@ -18,8 +19,10 @@ import static me.vukas.common.base.Objects.*;
 
 public class Diff {
     private Compare compare;
+    private Patch patch;
     private final Stack<Object> visitedElements = new Stack<Object>();
     private final Stack<Object> visitedKeys = new Stack<Object>();
+    private final MapStack<Object, Object> clonedElements = new MapStack<Object, Object>();
 
     private final Map<Object, List<LeafKey>> visitedCircularKeys = new HashMap<Object, List<LeafKey>>();
     private final Map<Object, CircularKey> rootCircularKeys = new HashMap<Object, CircularKey>();
@@ -43,6 +46,19 @@ public class Diff {
         this.compare = new Compare.Builder()
                 .registerEntities(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()))
                 .registerEntityGenerations((List<EntityComparison<?>>) (List<?>) this.entityGenerations).build();
+        this.patch = new Patch.Builder().build();
+    }
+
+    private <T> T clone(T original){
+        if(this.clonedElements.containsKey(original)){
+            return (T) this.clonedElements.get(original);
+        }
+        Class originalClass = original == null ? null : original.getClass();
+        T cloned = (T) createNewObjectOfType(originalClass);
+        this.clonedElements.push(original, cloned);
+        cloned = this.patch.patch(cloned, this.diff(cloned, original));
+        this.clonedElements.pop();
+        return cloned;
     }
 
     public <T> Element<Name, T> diff(T original, T revised) {
@@ -70,7 +86,7 @@ public class Diff {
         }
 
         if (original == null || revised == null) {
-            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
+            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone(revised));
         }
 
         if (!getWrappedClass(fieldType).equals(revised.getClass())) {

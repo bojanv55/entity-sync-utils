@@ -17,4 +17,22 @@ public class MapStack<K, V> extends Stack<Map.Entry<K, V>> {
         }
         return false;
     }
+
+    public boolean containsKey(K key){
+        for(Map.Entry<K, V> entry : this){
+            if(entry.getKey().equals(key)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public V get(K key){
+        for(Map.Entry<K, V> entry : this){
+            if(entry.getKey().equals(key)){
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
 }

@@ -76,6 +76,7 @@ public class Objects {
         } else if (type == Character.class) {
             return (T) new Character('\u0000');
         }
+
         return createNewObjectOfType(type);
     }
 
@@ -86,8 +87,12 @@ public class Objects {
                     return (T) Array.newInstance(type.getComponentType(), 0);
                 }
 
+                if(type.isEnum()){
+                    return null;
+                }
+
                 int numberOfConstructorParams = Integer.MAX_VALUE;
-                Object[] parameters = null;
+                Object[] parameters;
                 Constructor constructor = null;
 
                 for(Constructor declaredConstructor : type.getDeclaredConstructors()){
@@ -95,13 +100,16 @@ public class Objects {
                     if(paramTypes.length<numberOfConstructorParams) {
                         constructor = declaredConstructor;
                         numberOfConstructorParams = paramTypes.length;
-                        parameters = new Object[numberOfConstructorParams];
-                        for (int i = 0; i < numberOfConstructorParams; i++) {
-                            parameters[i] = defaultValue(getWrappedClass(paramTypes[i]));
-                        }
                     }
                 }
 
+                Class[] paramTypes = constructor.getParameterTypes();
+                parameters = new Object[numberOfConstructorParams];
+                for (int i = 0; i < numberOfConstructorParams; i++) {
+                    parameters[i] = defaultValue(getWrappedClass(paramTypes[i]));
+                }
+
+                constructor.setAccessible(true);
                 return (T) constructor.newInstance(parameters);
             } catch (Exception e) {
                 throw new UnsupportedOperationException(e);

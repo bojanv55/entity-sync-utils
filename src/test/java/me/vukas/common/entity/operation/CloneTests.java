@@ -117,6 +117,7 @@ public class CloneTests {
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
         gce1.setParent1(gce2);
+        gce2.setParent1(gce1);
         EntityNoDefConstructor e1 = new EntityNoDefConstructor(1, gce1);
 
         EntityNoDefConstructor cloned = this.clone.clone(e1);
