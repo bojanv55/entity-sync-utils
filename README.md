@@ -25,8 +25,8 @@ GrandChildEntity gce2 = new GrandChildEntity(2);
 
 EntityDefinition entityDefinition = new EntityDefinition(GrandChildEntity.class, "id").registerSuperclass(BaseEntity.class, "id");
 Diff diff = new Diff.Builder().registerEntity(entityDefinition).build();
-Patch patch = new Patch.Builder().registerEntity(entityDefinition).build();
-Compare compare = new Compare.Builder().registerEntity(entityDefinition).build();
+Patch patch = new Patch.Builder().build();
+Compare compare = new Compare.Builder().build();
 
 Element<Name, GrandChildEntity> diffElement = diff.diff(gce1, gce2);
 GrandChildEntity patchedEntity = patch.patch(new GrandChildEntity(1), diffElement);
