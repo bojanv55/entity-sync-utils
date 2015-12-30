@@ -1,6 +1,5 @@
 package me.vukas.common.entity.operation;
 
-import me.vukas.common.base.MapStack;
 import me.vukas.common.entity.*;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
@@ -19,10 +18,9 @@ import static me.vukas.common.base.Objects.*;
 
 public class Diff {
     private Compare compare;
-    private Patch patch;
+    private Clone clone;
     private final Stack<Object> visitedElements = new Stack<Object>();
     private final Stack<Object> visitedKeys = new Stack<Object>();
-    private final MapStack<Object, Object> clonedElements = new MapStack<Object, Object>();
 
     private final Map<Object, List<LeafKey>> visitedCircularKeys = new HashMap<Object, List<LeafKey>>();
     private final Map<Object, CircularKey> rootCircularKeys = new HashMap<Object, CircularKey>();
@@ -39,6 +37,8 @@ public class Diff {
         this.entityGenerations = builder.entityGenerations;
         this.typesToIgnoredFields = builder.typesToIgnoredFields;
 
+        this.registerInternalEntityGenerations();
+
         for (EntityGeneration entityGeneration : this.entityGenerations) {
             entityGeneration.setDiff(this);
         }
@@ -46,19 +46,30 @@ public class Diff {
         this.compare = new Compare.Builder()
                 .registerEntities(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()))
                 .registerEntityGenerations((List<EntityComparison<?>>) (List<?>) this.entityGenerations).build();
-        this.patch = new Patch.Builder().build();
+
+        this.clone = new Clone(this);
     }
 
-    private <T> T clone(T original){
-        if(this.clonedElements.containsKey(original)){
-            return (T) this.clonedElements.get(original);
+    protected Diff(Map<Class, IgnoredFields> typesToIgnoredFields, Clone clone){
+        this.typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
+        this.entityGenerations = new ArrayList<EntityGeneration<?>>();
+        this.typesToIgnoredFields = typesToIgnoredFields;
+
+        this.registerInternalEntityGenerations();
+
+        for (EntityGeneration entityGeneration : this.entityGenerations) {
+            entityGeneration.setDiff(this);
         }
-        Class originalClass = original == null ? null : original.getClass();
-        T cloned = (T) createNewObjectOfType(originalClass);
-        this.clonedElements.push(original, cloned);
-        cloned = this.patch.patch(cloned, this.diff(cloned, original));
-        this.clonedElements.pop();
-        return cloned;
+
+        this.compare = new Compare.Builder()
+                .registerEntities(new ArrayList<EntityDefinition>(this.typesToEntityDefinitions.values()))
+                .registerEntityGenerations((List<EntityComparison<?>>) (List<?>) this.entityGenerations).build();
+
+        this.clone = clone;
+    }
+
+    private void registerInternalEntityGenerations() {
+        this.entityGenerations.add(new MapEntryEntityGeneration());
     }
 
     public <T> Element<Name, T> diff(T original, T revised) {
@@ -86,7 +97,7 @@ public class Diff {
         }
 
         if (original == null || revised == null) {
-            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone(revised));
+            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised));
         }
 
         if (!getWrappedClass(fieldType).equals(revised.getClass())) {
@@ -147,7 +158,7 @@ public class Diff {
                 Object originalField = field.get(original);
                 Class originalFieldType = originalField == null ? null : originalField.getClass();
                 Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), originalField);
-                Element element = this.diff(originalField, field.get(revised), field.getName(), originalFieldType, field.getDeclaringClass(), fieldKey);
+                Element element = this.diff(originalField, /*this.clone.clone(*/field.get(revised)/*)*/, field.getName(), originalFieldType, field.getDeclaringClass(), fieldKey);
                 elements.add(element);
             }
         }
@@ -246,7 +257,6 @@ public class Diff {
             for(LeafKey leafKey : this.visitedCircularKeys.get(value)){
                 key.registerCircularKey(leafKey);
             }
-            //this.visitedCircularKeys.remove(value); //TODO: maybe not needed
         }
         this.rootCircularKeys.put(value, key);
         return key;
@@ -256,10 +266,6 @@ public class Diff {
         private final Map<Class, EntityDefinition> typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
         private final Map<Class, IgnoredFields> typesToIgnoredFields = new HashMap<Class, IgnoredFields>();
         private final List<EntityGeneration<?>> entityGenerations = new ArrayList<EntityGeneration<?>>();
-
-        public Builder() {
-            this.registerInternalEntityGenerations();
-        }
 
         public Builder registerEntity(EntityDefinition entityDefinition) {
             this.typesToEntityDefinitions.putIfAbsent(entityDefinition.getType(), entityDefinition);
@@ -286,10 +292,6 @@ public class Diff {
         public Builder registerEntityGenerations(List<EntityGeneration<?>> entityGenerations) {
             this.entityGenerations.addAll(entityGenerations);
             return this;
-        }
-
-        private void registerInternalEntityGenerations() {
-            this.registerEntityGeneration(new MapEntryEntityGeneration());
         }
 
         public Diff build() {

@@ -77,10 +77,10 @@ public class Objects {
             return (T) new Character('\u0000');
         }
 
-        return createNewObjectOfType(type);
+        return null;
     }
 
-    public static  <T> T createNewObjectOfType(Class<T> type){
+    public static <T> T createNewObjectOfType(Class<T> type){
         if(type != null) {
             try {
                 if(type.isArray()){
