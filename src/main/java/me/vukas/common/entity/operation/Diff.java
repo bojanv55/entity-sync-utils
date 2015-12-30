@@ -92,6 +92,17 @@ public class Diff {
             return element;
         }
 
+//        if(this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)){
+//            LeafElement<N, T> element;
+//            if (revised.equals(original)) {
+//                element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, this.clone.clone(revised));
+//            }
+//            else{
+//                element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised));
+//            }
+//            return element;
+//        }
+
         if (original == revised) {
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }

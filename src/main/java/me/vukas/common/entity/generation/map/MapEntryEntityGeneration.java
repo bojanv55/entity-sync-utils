@@ -14,11 +14,11 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
     public <N> Element<N, Map.Entry> diff(Map.Entry original, Map.Entry revised, N elementName, Class fieldType, Class containerType, Key<N, Map.Entry> key) {
         Class originalKeyClass = original.getKey() == null ? null : original.getKey().getClass();
         Key keyKey = this.getDiff().generateKey(elementName, originalKeyClass, fieldType, original.getKey());
-        Element keyElement = this.getDiff().diff(this.getDiff().getRevisedIfCircularReference(original.getKey()), revised.getKey(), elementName, originalKeyClass, fieldType, keyKey);
+        Element keyElement = this.getDiff().diff(original.getKey(), revised.getKey(), elementName, originalKeyClass, fieldType, keyKey);
 
         Class originalValueClass = original.getValue() == null ? null : original.getValue().getClass();
         Key valueKey = this.getDiff().generateKey(elementName, originalValueClass, fieldType, original.getValue());
-        Element valueElement = this.getDiff().diff(this.getDiff().getRevisedIfCircularReference(original.getValue()), revised.getValue(), elementName, originalValueClass, fieldType, valueKey);
+        Element valueElement = this.getDiff().diff(original.getValue(), revised.getValue(), elementName, originalValueClass, fieldType, valueKey);
 
         Element.Status status = Element.Status.EQUAL;
         if(keyElement.getStatus() != Element.Status.EQUAL || valueElement.getStatus() != Element.Status.EQUAL){

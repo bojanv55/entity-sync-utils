@@ -65,14 +65,19 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
         for (int j = 0; j < revisedArray.length; j++) {
             if (!matchedIndexes.contains(j)) {
-                if(this.getDiff().isCircularReferenced(revisedArray[j])){
-                    LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
+//                if(this.getDiff().isCircularReferenced(revisedArray[j])){
+//                    LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
+//                    elements.add(element);
+//                    this.getDiff().registerCircularElement(this.getDiff().getRevisedIfCircularReference(revisedArray[j]), element);
+//                }
+//                else {
+                    //elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, this.getDiff().getRevisedIfCircularReference(revisedArray[j])));
+                    //LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
+                    Class elementType = revisedArray[j] == null ? null : revisedArray[j].getClass();
+                    Element element = this.getDiff().diff(null, revisedArray[j], j, elementType, fieldType, null);
+                    element.setStatus(Element.Status.ADDED);
                     elements.add(element);
-                    this.getDiff().registerCircularElement(this.getDiff().getRevisedIfCircularReference(revisedArray[j]), element);
-                }
-                else {
-                    elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, this.getDiff().getRevisedIfCircularReference(revisedArray[j])));
-                }
+                //}
             }
         }
 
