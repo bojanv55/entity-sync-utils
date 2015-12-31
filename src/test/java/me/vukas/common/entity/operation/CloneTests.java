@@ -1,5 +1,7 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.entity.Name;
+import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.operation.model.EntityNoDefConstructor;
 import me.vukas.common.entity.operation.model.GrandChildEntity;
 import org.junit.Before;
@@ -113,7 +115,7 @@ public class CloneTests {
     }
 
     @Test
-    public void cloningObjectWithoutDefaultConstructorShouldProduceEntity() {
+    public void cloningObjectGraphWithoutDefaultConstructorShouldProduceObjectGraph() {
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
         gce1.setParent1(gce2);
@@ -122,5 +124,41 @@ public class CloneTests {
 
         EntityNoDefConstructor cloned = this.clone.clone(e1);
         assertThat(this.compare.compare(cloned, e1), is(true));
+    }
+
+    @Test
+    public void cloningObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph(){
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce1.setParent1(gce2);
+        gce1.setParent2(gce1);
+        gce1.addParentInList(gce1);
+        gce1.addParentInList(gce2);
+        gce1.addParentInList(gce1);
+        gce1.addParentInList(gce2);
+        gce1.addParentInSet(gce1);
+        gce1.addParentInSet(gce2);
+        gce1.addParentInSet(gce1);
+        gce1.addParentInSet(gce2);
+        gce1.addParentInArray(0, gce1);
+        gce1.addParentsInMap(gce1, gce1);
+        gce1.addParentsInMap(gce2, gce1);
+        gce2.setParent1(gce1);
+        gce2.setParent2(gce2);
+        gce2.addParentInList(gce2);
+        gce2.addParentInList(gce1);
+        gce2.addParentInSet(gce2);
+        gce2.addParentInSet(gce1);
+        gce2.addParentInSet(null);
+        gce2.addParentInSet(null);
+        gce2.addParentInArray(0, gce2);
+        gce2.addParentInArray(1, gce1);
+        gce2.addParentsInMap(gce2, gce2);
+        gce2.addParentsInMap(null, gce1);
+        gce2.addParentsInMap(gce1, null);
+        gce2.addParentsInMap(gce2, gce1);
+
+        GrandChildEntity cloned = this.clone.clone(gce2);
+        assertThat(this.compare.compare(cloned, gce2), is(true));
     }
 }

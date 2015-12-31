@@ -19,13 +19,11 @@ public class Objects {
     }
 
     public static boolean isPrimitiveOrWrapped(Class type) {
-        return type.isPrimitive()
-                || isWrapped(type);
+        return type != null && (type.isPrimitive() || isWrapped(type));
     }
 
     public static boolean isStringOrPrimitiveOrWrapped(Class type) {
-        return type == String.class
-                || isPrimitiveOrWrapped(type);
+        return type != null && (type == String.class || isPrimitiveOrWrapped(type));
     }
 
     public static Class getWrappedClass(Class type) {

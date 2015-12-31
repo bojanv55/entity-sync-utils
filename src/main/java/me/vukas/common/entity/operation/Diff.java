@@ -73,42 +73,53 @@ public class Diff {
     }
 
     public <T> Element<Name, T> diff(T original, T revised) {
-        Class originalClass = original == null ? null : original.getClass();
-        Key<Name, T> rootKey = this.generateKey(Name.ROOT, originalClass, null, original);
-        return this.diff(original, revised, Name.ROOT, originalClass, null, rootKey);
+        Class revisedClass = revised == null ? null : revised.getClass();
+        Key<Name, T> rootKey = this.generateKey(Name.ROOT, revisedClass, null, original);
+        return this.diff(original, revised, Name.ROOT, revisedClass, null, rootKey);
     }
 
     public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
 
         if(this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)){
-            LeafElement<N, T> element;
-            if (original.equals(revised)) {
-                element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T)Name.CIRCULAR_REFERENCE);
-            }
-            else{
-                element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
-            }
+            LeafElement<N, T> element= new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
             this.registerCircularElement(original, element);
             return element;
         }
-
-//        if(this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)){
-//            LeafElement<N, T> element;
-//            if (revised.equals(original)) {
-//                element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, this.clone.clone(revised));
-//            }
-//            else{
-//                element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised));
-//            }
-//            return element;
-//        }
 
         if (original == revised) {
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
 
-        if (original == null || revised == null) {
+        if (original == null) {
+
+
+            if (fieldType.isArray()  || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+                EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this, this.compare);
+                Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
+                //this.visitedElements.pop();
+                return element;
+            }
+
+            for (EntityGeneration<?> entityGeneration : this.entityGenerations) { //TODO: class hierarchy priority
+                if (entityGeneration.getType().isAssignableFrom(fieldType)) {
+                    EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+                    Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
+                    //this.visitedElements.pop();
+                    return element;
+                }
+            }
+
+            if(this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)){
+                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
+                this.registerCircularElement(revised, element);
+                return element;
+            }
+
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised));
+        }
+
+        if (revised == null) {
+            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, null);
         }
 
         if (!getWrappedClass(fieldType).equals(revised.getClass())) {
@@ -167,9 +178,10 @@ public class Diff {
             if(shouldDiffField(fieldType, field.getDeclaringClass(), field)) {
                 field.setAccessible(true);
                 Object originalField = field.get(original);
-                Class originalFieldType = originalField == null ? null : originalField.getClass();
+                Object revisedField = field.get(revised);
+                Class revisedFieldType = revisedField == null ? null : revisedField.getClass();
                 Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), originalField);
-                Element element = this.diff(originalField, /*this.clone.clone(*/field.get(revised)/*)*/, field.getName(), originalFieldType, field.getDeclaringClass(), fieldKey);
+                Element element = this.diff(originalField, revisedField, field.getName(), revisedFieldType, field.getDeclaringClass(), fieldKey);
                 elements.add(element);
             }
         }
@@ -205,7 +217,7 @@ public class Diff {
     }
 
     public <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
-        if (value == null || isStringOrPrimitiveOrWrapped(elementType) || Enum.class.isAssignableFrom(elementType)) {
+        if (value == null || elementType == null || isStringOrPrimitiveOrWrapped(elementType) || Enum.class.isAssignableFrom(elementType)) {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
 

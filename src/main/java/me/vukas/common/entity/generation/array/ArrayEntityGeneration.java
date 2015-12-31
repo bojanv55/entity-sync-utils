@@ -74,7 +74,8 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                     //elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, this.getDiff().getRevisedIfCircularReference(revisedArray[j])));
                     //LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
                     Class elementType = revisedArray[j] == null ? null : revisedArray[j].getClass();
-                    Element element = this.getDiff().diff(null, revisedArray[j], j, elementType, fieldType, null);
+                    Key<Integer, Object> elementKey = this.getDiff().generateKey(j, elementType, fieldType, null);
+                    Element element = this.getDiff().diff(null, this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
                     element.setStatus(Element.Status.ADDED);
                     elements.add(element);
                 //}
