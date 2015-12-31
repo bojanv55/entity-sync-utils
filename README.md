@@ -45,5 +45,3 @@ GrandChildEntity cloned = cloner.clone(gce1);
 ```
 
 The full usage samples are in Test folder of this project.
-
-Library is still under development, but it can be already used for diff, patch and compare operations on object graphs.
