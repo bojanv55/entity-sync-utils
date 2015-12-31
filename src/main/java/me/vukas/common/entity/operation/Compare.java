@@ -1,6 +1,5 @@
 package me.vukas.common.entity.operation;
 
-import me.vukas.common.base.MapStack;
 import me.vukas.common.entity.EntityComparison;
 import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.IgnoredFields;
@@ -37,51 +36,54 @@ public class Compare {
         return result;
     }
 
-    public  <T> boolean compare(T entity1, T entity2, Class fieldType){ //TODO: remove field type?
-        if(entity1 == entity2){
+    public <T> boolean compare(T entity1, T entity2, Class fieldType) { //TODO: remove field type?
+        if (entity1 == entity2) {
             return true;
         }
 
-        if(entity1 == null || entity2 == null){
+        if (entity1 == null || entity2 == null) {
             return false;
         }
 
-        if(isStringOrPrimitiveOrWrapped(fieldType)){
+        if (isStringOrPrimitiveOrWrapped(fieldType)) {
             return entity1.equals(entity2);
         }
 
-        if(this.visitedElements.contains(entity1)){
+        if (this.visitedElements.contains(entity1) && this.allVisitedElements.containsKey(entity1)) {
+//            if(this.allVisitedElements.get(entity1).contains(entity2)) {
+//                return true;
+//            }
             return this.allVisitedElements.get(entity1).equals(entity2);
         }
         this.visitedElements.push(entity1);
-        this.allVisitedElements.putIfAbsent(entity1, entity2);
 
-        if(fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)){
+        if (fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
             EntityComparison<T> entityComparison = new ArrayEntityGeneration<T>(this);
             boolean equals = entityComparison.compare(entity1, entity2, fieldType);
             this.visitedElements.pop();
             return equals;
         }
 
-        for(EntityComparison<?> entityComparison : this.entityComparisons){
-            if(entityComparison.getType().isAssignableFrom(fieldType)){ //TODO: class hierarchy priority
-                EntityComparison<T> entityComparisonCasted = (EntityComparison<T>)entityComparison;
+        for (EntityComparison<?> entityComparison : this.entityComparisons) {
+            if (entityComparison.getType().isAssignableFrom(fieldType)) { //TODO: class hierarchy priority
+                EntityComparison<T> entityComparisonCasted = (EntityComparison<T>) entityComparison;
                 boolean equals = entityComparisonCasted.compare(entity1, entity2, fieldType);
                 this.visitedElements.pop();
                 return equals;
             }
         }
 
+        this.allVisitedElements.put(entity1, entity2);
+
         List<Field> fields;
-        if(this.typesToEntityDefinitions.containsKey(fieldType)){
+        if (this.typesToEntityDefinitions.containsKey(fieldType)) {
             fields = this.typesToEntityDefinitions.get(fieldType).getFields();
-        }
-        else{
+        } else {
             fields = getAllFields(fieldType);
         }
 
-        for(Field field : fields){
-            if(shouldTestFieldForEquality(fieldType, field.getDeclaringClass(), field)) {
+        for (Field field : fields) {
+            if (shouldTestFieldForEquality(fieldType, field.getDeclaringClass(), field)) {
                 try {
                     field.setAccessible(true);
                     Class fieldClass = field.get(entity1) == null ? null : field.get(entity1).getClass();

@@ -14,7 +14,7 @@ public class LeafElement<N, V> extends Element<N, V> {
         return value;
     }
 
-    public void setValue(V value){
+    public void setValue(V value) {
         this.value = value;
     }
 }

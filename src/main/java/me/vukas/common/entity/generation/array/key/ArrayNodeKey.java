@@ -27,23 +27,22 @@ public class ArrayNodeKey<N, V> extends NodeKey<N, V> {
         Object[] array = wrapCollectionOrMapOrPrimitiveArray(value);
         Set<Integer> visitedIndexes = new HashSet<Integer>();
         Iterator<Key<?, ?>> childIterator = this.getChildren().iterator();
-        while(childIterator.hasNext()){
+        while (childIterator.hasNext()) {
             Key child = childIterator.next();
-            if(!child.match(array[(Integer)child.getName()])){
+            if (!child.match(array[(Integer) child.getName()])) {
                 INNER_LOOP:
-                while(childIterator.hasNext()){
+                while (childIterator.hasNext()) {
                     child = childIterator.next();
-                    for(int i=0; i<array.length; i++){
-                        if(child.match(array[i]) && !visitedIndexes.contains(i)){
+                    for (int i = 0; i < array.length; i++) {
+                        if (child.match(array[i]) && !visitedIndexes.contains(i)) {
                             visitedIndexes.add(i);
                             continue INNER_LOOP;
                         }
                     }
                     return false;
                 }
-            }
-            else{
-                visitedIndexes.add((Integer)child.getName());
+            } else {
+                visitedIndexes.add((Integer) child.getName());
             }
         }
         return true;

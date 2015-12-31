@@ -56,7 +56,7 @@ public class Objects {
         return fields;
     }
 
-    public static <T> T defaultValue(Class<T> type){
+    public static <T> T defaultValue(Class<T> type) {
         if (type == Byte.class) {
             return (T) new Byte((byte) 0);
         } else if (type == Short.class) {
@@ -78,14 +78,14 @@ public class Objects {
         return null;
     }
 
-    public static <T> T createNewObjectOfType(Class<T> type){
-        if(type != null) {
+    public static <T> T createNewObjectOfType(Class<T> type) {
+        if (type != null) {
             try {
-                if(type.isArray()){
+                if (type.isArray()) {
                     return (T) Array.newInstance(type.getComponentType(), 0);
                 }
 
-                if(type.isEnum()){
+                if (type.isEnum()) {
                     return null;
                 }
 
@@ -93,9 +93,9 @@ public class Objects {
                 Object[] parameters;
                 Constructor constructor = null;
 
-                for(Constructor declaredConstructor : type.getDeclaredConstructors()){
+                for (Constructor declaredConstructor : type.getDeclaredConstructors()) {
                     Class[] paramTypes = declaredConstructor.getParameterTypes();
-                    if(paramTypes.length<numberOfConstructorParams) {
+                    if (paramTypes.length < numberOfConstructorParams) {
                         constructor = declaredConstructor;
                         numberOfConstructorParams = paramTypes.length;
                     }

@@ -9,27 +9,27 @@ public class MapStack<K, V> extends Stack<Map.Entry<K, V>> {
         return super.push(new AbstractMap.SimpleEntry<K, V>(key, value));
     }
 
-    public boolean containsKeyAndValuePair(K key, V value){
-        for(Map.Entry<K, V> entry : this){
-            if(entry.getKey().equals(key) && entry.getValue().equals(value)){
+    public boolean containsKeyAndValuePair(K key, V value) {
+        for (Map.Entry<K, V> entry : this) {
+            if (entry.getKey().equals(key) && entry.getValue().equals(value)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean containsKey(K key){
-        for(Map.Entry<K, V> entry : this){
-            if(entry.getKey().equals(key)){
+    public boolean containsKey(K key) {
+        for (Map.Entry<K, V> entry : this) {
+            if (entry.getKey().equals(key)) {
                 return true;
             }
         }
         return false;
     }
 
-    public V get(K key){
-        for(Map.Entry<K, V> entry : this){
-            if(entry.getKey().equals(key)){
+    public V get(K key) {
+        for (Map.Entry<K, V> entry : this) {
+            if (entry.getKey().equals(key)) {
                 return entry.getValue();
             }
         }

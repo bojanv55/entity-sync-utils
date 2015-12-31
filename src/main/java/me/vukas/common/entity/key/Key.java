@@ -1,7 +1,5 @@
 package me.vukas.common.entity.key;
 
-import me.vukas.common.entity.Name;
-
 import java.lang.reflect.Field;
 
 public abstract class Key<N, V> {
@@ -27,11 +25,11 @@ public abstract class Key<N, V> {
         return container;
     }
 
-    public Field getAccessibleDeclaredFiled(){
-        return this.getAccessibleDeclaredFiled((String)this.getName());
+    public Field getAccessibleDeclaredFiled() {
+        return this.getAccessibleDeclaredFiled((String) this.getName());
     }
 
-    public Field getAccessibleDeclaredFiled(String fieldName){
+    public Field getAccessibleDeclaredFiled(String fieldName) {
         try {
             Field field = this.getContainer().getDeclaredField(fieldName);
             field.setAccessible(true);

@@ -21,7 +21,7 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
         Element valueElement = this.getDiff().diff(original == null ? null : this.getDiff().getRevisedIfCircularReference(original.getValue()), this.getDiff().getRevisedIfCircularReference(revised.getValue()), elementName, revisedValueClass, fieldType, valueKey);
 
         Element.Status status = Element.Status.EQUAL;
-        if(keyElement.getStatus() != Element.Status.EQUAL || valueElement.getStatus() != Element.Status.EQUAL){
+        if (keyElement.getStatus() != Element.Status.EQUAL || valueElement.getStatus() != Element.Status.EQUAL) {
             status = Element.Status.MODIFIED;
         }
 
@@ -41,19 +41,19 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
     @Override
     public <N> Map.Entry patch(Map.Entry original, Element<N, Map.Entry> diff) {
         return new AbstractMap.SimpleEntry(
-                this.getPatch().patch(original == null ? null : original.getKey(), ((MapEntryNodeElement)diff).getElementKey()),
-                this.getPatch().patch(original == null ? null : original.getValue(), ((MapEntryNodeElement)diff).getElementValue())
+                this.getPatch().patch(original == null ? null : original.getKey(), ((MapEntryNodeElement) diff).getElementKey()),
+                this.getPatch().patch(original == null ? null : original.getValue(), ((MapEntryNodeElement) diff).getElementValue())
         );
     }
 
     @Override
     public boolean compare(Map.Entry entity1, Map.Entry entity2, Class fieldType) {
         Class entity1KeyClass = entity1.getKey() == null ? null : entity1.getKey().getClass();
-        if(!this.getCompare().compare(entity1.getKey(), entity2.getKey(), entity1KeyClass)){
+        if (!this.getCompare().compare(entity1.getKey(), entity2.getKey(), entity1KeyClass)) {
             return false;
         }
         Class entity1ValueClass = entity1.getValue() == null ? null : entity1.getValue().getClass();
-        if(!this.getCompare().compare(entity1.getValue(), entity2.getValue(), entity1ValueClass)){
+        if (!this.getCompare().compare(entity1.getValue(), entity2.getValue(), entity1ValueClass)) {
             return false;
         }
         return true;

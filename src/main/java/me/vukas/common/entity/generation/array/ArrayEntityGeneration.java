@@ -1,7 +1,6 @@
 package me.vukas.common.entity.generation.array;
 
 import me.vukas.common.entity.EntityGeneration;
-import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
@@ -17,17 +16,17 @@ import static me.vukas.common.base.Arrays.*;
 
 public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
-    public ArrayEntityGeneration(Diff diff, Compare compare){
+    public ArrayEntityGeneration(Diff diff, Compare compare) {
         this(compare);
         this.setDiff(diff);
     }
 
-    public ArrayEntityGeneration(Patch patch){
+    public ArrayEntityGeneration(Patch patch) {
         super();
         this.setPatch(patch);
     }
 
-    public ArrayEntityGeneration(Compare compare){
+    public ArrayEntityGeneration(Compare compare) {
         super();
         this.setCompare(compare);
     }
@@ -72,13 +71,13 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 //                    this.getDiff().registerCircularElement(this.getDiff().getRevisedIfCircularReference(revisedArray[j]), element);
 //                }
 //                else {
-                    //elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, this.getDiff().getRevisedIfCircularReference(revisedArray[j])));
-                    //LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
-                    Class elementType = revisedArray[j] == null ? null : revisedArray[j].getClass();
-                    Key<Integer, Object> elementKey = this.getDiff().generateKey(j, elementType, fieldType, null);
-                    Element element = this.getDiff().diff(null, this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
-                    element.setStatus(Element.Status.ADDED);
-                    elements.add(element);
+                //elements.add(new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, this.getDiff().getRevisedIfCircularReference(revisedArray[j])));
+                //LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
+                Class elementType = revisedArray[j] == null ? null : revisedArray[j].getClass();
+                Key<Integer, Object> elementKey = this.getDiff().generateKey(j, elementType, fieldType, null);
+                Element element = this.getDiff().diff(null, this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
+                element.setStatus(Element.Status.ADDED);
+                elements.add(element);
                 //}
             }
         }
@@ -93,7 +92,7 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
     public <N> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
         List<Key<?, ?>> keys = new ArrayList<Key<?, ?>>();
         Object[] originalArray = wrapCollectionOrMapOrPrimitiveArray(value);
-        for(int i=0; i<originalArray.length; i++){
+        for (int i = 0; i < originalArray.length; i++) {
             Class keyType = originalArray[i] == null ? null : originalArray[i].getClass();
             keys.add(this.getDiff().generateKey(i, keyType, elementType, originalArray[i]));
         }
@@ -105,56 +104,53 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         Class originalType = diff.getKey() == null ? null : diff.getKey().getType();
         Object[] originalArray = wrapCollectionOrMapOrPrimitiveArray(original);
 
-        if(((ArrayNodeKey)diff.getKey()).getLength() != originalArray.length
-                || !diff.getKey().match(original)){ //TODO: check if getkey match is needed here -- possible previous checking, should not check 2 times
+        if (((ArrayNodeKey) diff.getKey()).getLength() != originalArray.length
+                || !diff.getKey().match(original)) { //TODO: check if getkey match is needed here -- possible previous checking, should not check 2 times
             throw new UnsupportedOperationException("Array size and/or element mismatch");
         }
 
         Set<Integer> skipIndexes = new TreeSet<Integer>();
         int newLength = originalArray.length;
-        for(Element<?,?> childElement : ((NodeElement<?,?>)diff).getChildren()){
-            if(childElement.getStatus() == Element.Status.ADDED){
+        for (Element<?, ?> childElement : ((NodeElement<?, ?>) diff).getChildren()) {
+            if (childElement.getStatus() == Element.Status.ADDED) {
                 newLength++;
-            }
-            else if(childElement.getStatus() == Element.Status.DELETED){
+            } else if (childElement.getStatus() == Element.Status.DELETED) {
                 newLength--;
             }
 
-            if(childElement.getStatus() == Element.Status.DELETED
+            if (childElement.getStatus() == Element.Status.DELETED
                     || childElement.getStatus() == Element.Status.EQUAL_MOVED
-                    || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
-                skipIndexes.add((Integer)childElement.getKey().getName());
+                    || childElement.getStatus() == Element.Status.MODIFIED_MOVED) {
+                skipIndexes.add((Integer) childElement.getKey().getName());
             }
         }
 
-        int[] skipIndexesUnwrapped = (int[])unwrap(skipIndexes.toArray(new Integer[skipIndexes.size()]));
+        int[] skipIndexesUnwrapped = (int[]) unwrap(skipIndexes.toArray(new Integer[skipIndexes.size()]));
         Object newArray = partialCopy(originalArray, newLength, skipIndexesUnwrapped);
-        for(Element childElement : ((NodeElement<?,?>)diff).getChildren()){
-            if(childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED){
+        for (Element childElement : ((NodeElement<?, ?>) diff).getChildren()) {
+            if (childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED) {
 
-                if(!childElement.getKey().match(originalArray[(Integer)childElement.getKey().getName()])){
+                if (!childElement.getKey().match(originalArray[(Integer) childElement.getKey().getName()])) {
                     return tryPatchingAsUnorderedCollection((NodeElement<?, ?>) diff, originalType, originalArray);
                 }
 
                 //collection is ordered so we can process it as usual
-                insert(newArray, (Integer)childElement.getName(), originalArray[(Integer)childElement.getKey().getName()]);
+                insert(newArray, (Integer) childElement.getName(), originalArray[(Integer) childElement.getKey().getName()]);
 
-            }
-            else if(childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
+            } else if (childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED) {
 
-                if(!childElement.getKey().match(originalArray[(Integer)childElement.getKey().getName()])){
+                if (!childElement.getKey().match(originalArray[(Integer) childElement.getKey().getName()])) {
                     return tryPatchingAsUnorderedCollection((NodeElement<?, ?>) diff, originalType, originalArray);
                 }
 
                 //collection is ordered so we can process it as usual
-                insert(newArray, (Integer)childElement.getName(), this.getPatch().patch(originalArray[(Integer)childElement.getKey().getName()], childElement));
-            }
-            else if(childElement.getStatus() == Element.Status.ADDED){
-                insert(newArray, (Integer)childElement.getName(), this.getPatch().patch(null, childElement));
+                insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(originalArray[(Integer) childElement.getKey().getName()], childElement));
+            } else if (childElement.getStatus() == Element.Status.ADDED) {
+                insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(null, childElement));
             }
         }
 
-        return (T)unwrapCollectionOrMapOrPrimitiveArray(newArray, originalType);
+        return (T) unwrapCollectionOrMapOrPrimitiveArray(newArray, originalType);
     }
 
     private T tryPatchingAsUnorderedCollection(NodeElement<?, ?> diff, Class originalType, Object[] originalArray) {
@@ -162,46 +158,43 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         Collection newCollection = new ArrayList<Object>(Arrays.asList(originalArray));
 
         UNORDERED_COLLECTION:
-        for(Element childElement : diff.getChildren()){
-            if(childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED){
+        for (Element childElement : diff.getChildren()) {
+            if (childElement.getStatus() == Element.Status.EQUAL || childElement.getStatus() == Element.Status.EQUAL_MOVED) {
                 Iterator iterator = newCollection.iterator();
-                while(iterator.hasNext()){
+                while (iterator.hasNext()) {
                     Object newElement = iterator.next();
-                    if(childElement.getKey().match(newElement)){
+                    if (childElement.getKey().match(newElement)) {
                         continue UNORDERED_COLLECTION;
                     }
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
-            }
-            else if(childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED){
+            } else if (childElement.getStatus() == Element.Status.MODIFIED || childElement.getStatus() == Element.Status.MODIFIED_MOVED) {
                 Iterator iterator = newCollection.iterator();
-                while(iterator.hasNext()){
+                while (iterator.hasNext()) {
                     Object newElement = iterator.next();
-                    if(childElement.getKey().match(newElement)){
+                    if (childElement.getKey().match(newElement)) {
                         iterator.remove();
                         newCollection.add(this.getPatch().patch(newElement, childElement));
                         continue UNORDERED_COLLECTION;
                     }
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
-            }
-            else if(childElement.getStatus() == Element.Status.DELETED){
+            } else if (childElement.getStatus() == Element.Status.DELETED) {
                 Iterator iterator = newCollection.iterator();
-                while(iterator.hasNext()){
+                while (iterator.hasNext()) {
                     Object newElement = iterator.next();
-                    if(childElement.getKey().match(newElement)){
+                    if (childElement.getKey().match(newElement)) {
                         iterator.remove();
                         continue UNORDERED_COLLECTION;
                     }
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
-            }
-            else if(childElement.getStatus() == Element.Status.ADDED){
+            } else if (childElement.getStatus() == Element.Status.ADDED) {
                 newCollection.add(this.getPatch().patch(null, childElement));
             }
         }
 
-        return (T)unwrapCollectionOrMapOrPrimitiveArray(newCollection.toArray(), originalType);
+        return (T) unwrapCollectionOrMapOrPrimitiveArray(newCollection.toArray(), originalType);
     }
 
     @Override
@@ -209,21 +202,21 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         Object[] entity1Array = wrapCollectionOrMapOrPrimitiveArray(entity1);
         Object[] entity2Array = wrapCollectionOrMapOrPrimitiveArray(entity2);
 
-        if(entity1Array.length!=entity2Array.length){
+        if (entity1Array.length != entity2Array.length) {
             return false;
         }
 
-        for(int i=0; i<entity1Array.length; i++){
+        for (int i = 0; i < entity1Array.length; i++) {
             Class entity1Class = entity1Array[i] == null ? null : entity1Array[i].getClass();
-            if(!this.getCompare().compare(entity1Array[i], entity2Array[i], entity1Class)){   //TODO: check if this is real array - if it is, it must be ordered!
+            if (!this.getCompare().compare(entity1Array[i], entity2Array[i], entity1Class)) {   //TODO: check if this is real array - if it is, it must be ordered!
 
                 //we possibly compare unordered collections so switch to that mode
                 Set<Integer> visitedIndexes = new HashSet<Integer>();
                 INNER_LOOP:
-                for(int j=i; j<entity1Array.length; j++){
-                    for(int k=i; k<entity2Array.length; k++){
+                for (int j = i; j < entity1Array.length; j++) {
+                    for (int k = i; k < entity2Array.length; k++) {
                         entity1Class = entity1Array[j] == null ? null : entity1Array[j].getClass();
-                        if(this.getCompare().compare(entity1Array[j], entity2Array[k], entity1Class) && !visitedIndexes.contains(k)){
+                        if (this.getCompare().compare(entity1Array[j], entity2Array[k], entity1Class) && !visitedIndexes.contains(k)) {
                             visitedIndexes.add(k);
                             continue INNER_LOOP;
                         }

@@ -2,7 +2,6 @@ package me.vukas.common.entity;
 
 import me.vukas.common.entity.operation.Compare;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 
 public abstract class EntityComparison<T> {
@@ -13,8 +12,7 @@ public abstract class EntityComparison<T> {
     protected EntityComparison() {
         try {
             this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        }
-        catch (ClassCastException e){
+        } catch (ClassCastException e) {
             this.type = null;   //TODO: in case we need to init int[] as <T>
         }
     }

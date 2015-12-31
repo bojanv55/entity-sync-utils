@@ -1,9 +1,7 @@
 package me.vukas.common.entity.operation;
 
-import me.vukas.common.base.MapStack;
 import me.vukas.common.entity.IgnoredFields;
 import me.vukas.common.entity.Name;
-import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.key.Key;
 
 import java.util.HashMap;
@@ -27,26 +25,26 @@ public class Clone {
         this.diff = new Diff(builder.typesToIgnoredFields, this);
     }
 
-    protected Clone(Diff diff){
+    protected Clone(Diff diff) {
         this.patch = new Patch.Builder().build();
         this.diff = diff;
     }
 
-    public <T> T clone(T original){
+    public <T> T clone(T original) {
         T result = this.clone(original, true);
         this.originalToRevisedElements.clear();
         return result;
     }
 
-    public <T> T clone(T original, boolean flag){
-        if(this.originalToRevisedElements.containsKey(original)){
+    public <T> T clone(T original, boolean flag) {
+        if (this.originalToRevisedElements.containsKey(original)) {
             return (T) this.originalToRevisedElements.get(original);
         }
         Class originalClass = original == null ? null : original.getClass();
         T cloned = (T) createNewObjectOfType(originalClass);
         this.clonedElements.push(original);
 
-        if (originalClass!=null && !isStringOrPrimitiveOrWrapped(originalClass)) {
+        if (originalClass != null && !isStringOrPrimitiveOrWrapped(originalClass)) {
             this.originalToRevisedElements.put(original, cloned);
         }
 

@@ -16,10 +16,10 @@ public class IgnoredFields {
         return this.type;
     }
 
-    public boolean containsField(Class type, String fieldName){
-        if(this.typesToProperties.containsKey(type)) {
+    public boolean containsField(Class type, String fieldName) {
+        if (this.typesToProperties.containsKey(type)) {
             for (String field : this.typesToProperties.get(type)) {
-                if(field.equals(fieldName)){
+                if (field.equals(fieldName)) {
                     return true;
                 }
             }

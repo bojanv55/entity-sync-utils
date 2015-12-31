@@ -1,6 +1,5 @@
 package me.vukas.common.entity.operation;
 
-import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.EntityGeneration;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
@@ -9,7 +8,10 @@ import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class Patch {
     private final List<EntityGeneration<?>> entityGenerations;
@@ -23,35 +25,35 @@ public class Patch {
         }
     }
 
-    public <N, T> T patch(T original, Element<N, T> diff){
+    public <N, T> T patch(T original, Element<N, T> diff) {
         Class originalType = diff.getKey() == null ? null : diff.getKey().getType();
 
-        if(diff.getKey()!=null && !diff.getKey().match(original)){
+        if (diff.getKey() != null && !diff.getKey().match(original)) {
             throw new UnsupportedOperationException("Key does not match");
         }
 
-        if(diff instanceof LeafElement){
+        if (diff instanceof LeafElement) {
             return ((LeafElement<?, T>) diff).getValue();
         }
 
-        for(EntityGeneration<?> entityGeneration : this.entityGenerations){
-            if(entityGeneration.getType().isAssignableFrom(originalType)){   //TODO: class hierarchy priority
-                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+        for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
+            if (entityGeneration.getType().isAssignableFrom(originalType)) {   //TODO: class hierarchy priority
+                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>) entityGeneration;
                 return entityGenerationCasted.patch(original, diff);
             }
         }
 
-        if(originalType.isArray() || Collection.class.isAssignableFrom(originalType)
-                || Map.class.isAssignableFrom(originalType)){
+        if (originalType.isArray() || Collection.class.isAssignableFrom(originalType)
+                || Map.class.isAssignableFrom(originalType)) {
             EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this);
             return entityGeneration.patch(original, diff);
         }
 
         //TODO: must be an object?
-        for(Object childElement : ((NodeElement)diff).getChildren()){
-            Field field = ((Element)childElement).getKey().getAccessibleDeclaredFiled();
+        for (Object childElement : ((NodeElement) diff).getChildren()) {
+            Field field = ((Element) childElement).getKey().getAccessibleDeclaredFiled();
             try {
-                field.set(original, this.patch(field.get(original), (Element)childElement));
+                field.set(original, this.patch(field.get(original), (Element) childElement));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }

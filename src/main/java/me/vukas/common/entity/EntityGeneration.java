@@ -2,7 +2,6 @@ package me.vukas.common.entity;
 
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.key.Key;
-import me.vukas.common.entity.operation.Clone;
 import me.vukas.common.entity.operation.Diff;
 import me.vukas.common.entity.operation.Patch;
 
@@ -14,7 +13,7 @@ public abstract class EntityGeneration<T> extends EntityComparison<T> {
         return this.diff;
     }
 
-    public Patch getPatch(){
+    public Patch getPatch() {
         return this.patch;
     }
 

@@ -9,6 +9,7 @@ import me.vukas.common.entity.operation.model.GrandChildEntity;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -309,7 +310,7 @@ public class PatchTests {
     }
 
     @Test
-    public void patchingObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph(){
+    public void patchingObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph() throws FileNotFoundException {
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
         gce1.setParent1(gce2);
@@ -372,6 +373,7 @@ public class PatchTests {
 
         Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
         GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
         assertThat(this.compare.compare(patched, gce2), is(true));
     }
 

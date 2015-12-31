@@ -15,19 +15,19 @@ public abstract class CircularKey<N, V> extends Key<N, V> {
         this.circularLeafKeys = new ArrayList<LeafKey<?, ?>>();
     }
 
-    public void registerCircularElement(LeafElement<?, ?> element){
+    public void registerCircularElement(LeafElement<?, ?> element) {
         this.circularLeafElements.add(element);
     }
 
-    public void registerCircularKey(LeafKey<?, ?> key){
+    public void registerCircularKey(LeafKey<?, ?> key) {
         this.circularLeafKeys.add(key);
     }
 
-    public void updateCircularReferences(V value){
-        for(LeafElement element : this.circularLeafElements){
+    public void updateCircularReferences(V value) {
+        for (LeafElement element : this.circularLeafElements) {
             element.setValue(value);
         }
-        for(LeafKey key : this.circularLeafKeys){
+        for (LeafKey key : this.circularLeafKeys) {
             key.setValue(value);
         }
     }

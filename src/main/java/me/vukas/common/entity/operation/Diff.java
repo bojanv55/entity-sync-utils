@@ -50,7 +50,7 @@ public class Diff {
         this.clone = new Clone(this);
     }
 
-    protected Diff(Map<Class, IgnoredFields> typesToIgnoredFields, Clone clone){
+    protected Diff(Map<Class, IgnoredFields> typesToIgnoredFields, Clone clone) {
         this.typesToEntityDefinitions = new HashMap<Class, EntityDefinition>();
         this.entityGenerations = new ArrayList<EntityGeneration<?>>();
         this.typesToIgnoredFields = typesToIgnoredFields;
@@ -84,8 +84,8 @@ public class Diff {
 
     public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
 
-        if(this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)){
-            LeafElement<N, T> element= new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
+        if (this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)) {
+            LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
             this.registerCircularElement(original, element);
             return element;
         }
@@ -97,7 +97,7 @@ public class Diff {
         if (original == null) {
 
 
-            if (fieldType.isArray()  || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+            if (fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
                 EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this, this.compare);
                 Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
                 //this.visitedElements.pop();
@@ -106,15 +106,15 @@ public class Diff {
 
             for (EntityGeneration<?> entityGeneration : this.entityGenerations) { //TODO: class hierarchy priority
                 if (entityGeneration.getType().isAssignableFrom(fieldType)) {
-                    EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+                    EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>) entityGeneration;
                     Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
                     //this.visitedElements.pop();
                     return element;
                 }
             }
 
-            if(this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)){
-                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T)Name.CIRCULAR_REFERENCE);
+            if (this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)) {
+                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
                 this.registerCircularElement(revised, element);
                 return element;
             }
@@ -141,7 +141,7 @@ public class Diff {
 
         this.visitedElements.push(original);
 
-        if (fieldType.isArray()  || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+        if (fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
             EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this, this.compare);
             Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
             this.visitedElements.pop();
@@ -150,7 +150,7 @@ public class Diff {
 
         for (EntityGeneration<?> entityGeneration : this.entityGenerations) { //TODO: class hierarchy priority
             if (entityGeneration.getType().isAssignableFrom(fieldType)) {
-                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>) entityGeneration;
                 Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
                 this.visitedElements.pop();
                 return element;
@@ -179,7 +179,7 @@ public class Diff {
         List<Element<?, ?>> elements = new ArrayList<Element<?, ?>>();
         List<Field> fields = getAllFields(fieldType);
         for (Field field : fields) {
-            if(shouldDiffField(fieldType, field.getDeclaringClass(), field)) {
+            if (shouldDiffField(fieldType, field.getDeclaringClass(), field)) {
                 field.setAccessible(true);
                 Object originalField = field.get(original);
                 Object revisedField = field.get(revised);
@@ -205,18 +205,18 @@ public class Diff {
         return Element.Status.EQUAL;
     }
 
-    public <T> T getRevisedIfCircularReference(T original){
-        if(this.originalToRevisedElements.containsKey(original)){
-            return (T)this.originalToRevisedElements.get(original);
+    public <T> T getRevisedIfCircularReference(T original) {
+        if (this.originalToRevisedElements.containsKey(original)) {
+            return (T) this.originalToRevisedElements.get(original);
         }
         return original;
     }
 
-    public <T> boolean isCircularReferenced(T original){
+    public <T> boolean isCircularReferenced(T original) {
         return this.originalToRevisedElements.containsKey(original);
     }
 
-    public <T> void registerCircularElement(T original, LeafElement element){
+    public <T> void registerCircularElement(T original, LeafElement element) {
         this.rootCircularKeys.get(original).registerCircularElement(element);
     }
 
@@ -225,14 +225,14 @@ public class Diff {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
         }
 
-        if(this.rootCircularKeys.containsKey(value)){
-            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);
+        if (this.rootCircularKeys.containsKey(value)) {
+            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T) Name.CIRCULAR_REFERENCE);
             this.rootCircularKeys.get(value).registerCircularKey(key);
             return key;
         }
 
-        if(this.visitedElements.contains(value) || this.visitedKeys.contains(value)){
-            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T)Name.CIRCULAR_REFERENCE);
+        if (this.visitedElements.contains(value) || this.visitedKeys.contains(value)) {
+            LeafKey<N, T> key = new LeafKey<N, T>(elementName, elementType, containerType, (T) Name.CIRCULAR_REFERENCE);
             List<LeafKey> leafKeys = this.visitedCircularKeys.getOrDefault(value, new ArrayList<LeafKey>());
             this.visitedCircularKeys.putIfAbsent(value, leafKeys);
             leafKeys.add(key);
@@ -241,16 +241,16 @@ public class Diff {
 
         this.visitedKeys.push(value);
 
-        if(elementType.isArray() || Collection.class.isAssignableFrom(elementType) || Map.class.isAssignableFrom(elementType)){
+        if (elementType.isArray() || Collection.class.isAssignableFrom(elementType) || Map.class.isAssignableFrom(elementType)) {
             EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this, this.compare);
             Key<N, T> key = entityGeneration.generateKey(elementName, elementType, containerType, value);
             this.visitedKeys.pop();
             return key;
         }
 
-        for(EntityGeneration<?> entityGeneration : this.entityGenerations){
-            if(entityGeneration.getType().isAssignableFrom(elementType)){   //TODO: class hierarchy priority
-                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>)entityGeneration;
+        for (EntityGeneration<?> entityGeneration : this.entityGenerations) {
+            if (entityGeneration.getType().isAssignableFrom(elementType)) {   //TODO: class hierarchy priority
+                EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>) entityGeneration;
                 Key<N, T> key = entityGenerationCasted.generateKey(elementName, elementType, containerType, value);
                 this.visitedKeys.pop();
                 return key;
@@ -260,28 +260,26 @@ public class Diff {
         List<Key<?, ?>> keys = new ArrayList<Key<?, ?>>();
         List<Field> fields;
 
-        if(this.typesToEntityDefinitions.containsKey(elementType)){
+        if (this.typesToEntityDefinitions.containsKey(elementType)) {
             fields = this.typesToEntityDefinitions.get(elementType).getFields();
-        }
-        else{
+        } else {
             fields = getAllFields(elementType);
         }
 
-        for(Field field : fields){
-            try{
+        for (Field field : fields) {
+            try {
                 field.setAccessible(true);
                 Key<?, ?> key = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), field.get(value));
                 keys.add(key);
-            }
-            catch (IllegalAccessException e){
+            } catch (IllegalAccessException e) {
                 //TODO: remove this catch to separate method
             }
         }
 
         this.visitedKeys.pop();
         NodeKey<N, T> key = new NodeKey<N, T>(elementName, elementType, containerType, keys);
-        if(this.visitedCircularKeys.containsKey(value)){
-            for(LeafKey leafKey : this.visitedCircularKeys.get(value)){
+        if (this.visitedCircularKeys.containsKey(value)) {
+            for (LeafKey leafKey : this.visitedCircularKeys.get(value)) {
                 key.registerCircularKey(leafKey);
             }
         }

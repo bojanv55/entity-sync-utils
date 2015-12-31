@@ -14,12 +14,12 @@ public class LeafKey<N, V> extends Key<N, V> {
         return value;
     }
 
-    public void setValue(V value){
+    public void setValue(V value) {
         this.value = value;
     }
 
     @Override
     public boolean match(V value) {
-        return this.value == value || this.value!=null && (this.value.equals(value) || this.value.equals(Name.CIRCULAR_REFERENCE));
+        return this.value == value || this.value != null && (this.value.equals(value) || this.value.equals(Name.CIRCULAR_REFERENCE));
     }
 }

@@ -33,17 +33,17 @@ public class Arrays {
         return newArray;
     }
 
-    public static Object unwrapCollectionOrMapOrPrimitiveArray(Object input, Class outputType){
-        if(outputType.isArray()){
+    public static Object unwrapCollectionOrMapOrPrimitiveArray(Object input, Class outputType) {
+        if (outputType.isArray()) {
             Class componentType = outputType.getComponentType();
-            if(componentType.isPrimitive()) {
-                return unwrap((Object[])input);
+            if (componentType.isPrimitive()) {
+                return unwrap((Object[]) input);
             }
         }
-        if(Collection.class.isAssignableFrom(outputType)){
+        if (Collection.class.isAssignableFrom(outputType)) {
             Collection newCollection = null;
             try {
-                newCollection = (Collection)outputType.newInstance();
+                newCollection = (Collection) outputType.newInstance();
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
@@ -51,18 +51,17 @@ public class Arrays {
             }
             Collections.addAll(newCollection, (Object[]) input);
             return newCollection;
-        }
-        else if(Map.class.isAssignableFrom(outputType)){
+        } else if (Map.class.isAssignableFrom(outputType)) {
             Map newMap = null;
             try {
-                newMap = (Map)outputType.newInstance();
+                newMap = (Map) outputType.newInstance();
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-            for(Object entry : (Object[])input){
-                Map.Entry mapEntry = (Map.Entry)entry;
+            for (Object entry : (Object[]) input) {
+                Map.Entry mapEntry = (Map.Entry) entry;
                 newMap.put(mapEntry.getKey(), mapEntry.getValue());
             }
             return newMap;
@@ -70,141 +69,131 @@ public class Arrays {
         return input;   //if needs no unwrapping, return original
     }
 
-    public static Object[] wrapCollectionOrMapOrPrimitiveArray(Object input){
-        if(input == null){
+    public static Object[] wrapCollectionOrMapOrPrimitiveArray(Object input) {
+        if (input == null) {
             throw new IllegalArgumentException("Parameter 'input' can not be null");
         }
-        if(Collection.class.isAssignableFrom(input.getClass())){
-            return ((Collection)input).toArray();
-        }
-        else if(Map.class.isAssignableFrom(input.getClass())){
-            return ((Map)input).entrySet().toArray();
-        }
-        else{
+        if (Collection.class.isAssignableFrom(input.getClass())) {
+            return ((Collection) input).toArray();
+        } else if (Map.class.isAssignableFrom(input.getClass())) {
+            return ((Map) input).entrySet().toArray();
+        } else {
             return wrap(input);
         }
     }
 
     //TODO: CHECK logic
-    public static void insert(Object array, int index, Object element){
+    public static void insert(Object array, int index, Object element) {
         Class componentType = array.getClass().getComponentType();
-        if(componentType.isPrimitive()){
+        if (componentType.isPrimitive()) {
             if (byte.class.isAssignableFrom(componentType)) {
-                ((byte[])array)[index] = (Byte)element;
+                ((byte[]) array)[index] = (Byte) element;
             } else if (short.class.isAssignableFrom(componentType)) {
-                ((short[])array)[index] = (Short)element;
+                ((short[]) array)[index] = (Short) element;
             } else if (int.class.isAssignableFrom(componentType)) {
-                ((int[])array)[index] = (Integer)element;
+                ((int[]) array)[index] = (Integer) element;
             } else if (long.class.isAssignableFrom(componentType)) {
-                ((long[])array)[index] = (Long)element;
+                ((long[]) array)[index] = (Long) element;
             } else if (float.class.isAssignableFrom(componentType)) {
-                ((float[])array)[index] = (Float)element;
+                ((float[]) array)[index] = (Float) element;
             } else if (double.class.isAssignableFrom(componentType)) {
-                ((double[])array)[index] = (Double)element;
+                ((double[]) array)[index] = (Double) element;
             } else if (boolean.class.isAssignableFrom(componentType)) {
-                ((boolean[])array)[index] = (Boolean)element;
+                ((boolean[]) array)[index] = (Boolean) element;
             } else if (char.class.isAssignableFrom(componentType)) {
-                ((char[])array)[index] = (Character)element;
+                ((char[]) array)[index] = (Character) element;
             }
-        }
-        else {
+        } else {
             ((Object[]) array)[index] = element;
         }
     }
 
-    public static Object unwrap(Object[] array){
-        if(array == null){
+    public static Object unwrap(Object[] array) {
+        if (array == null) {
             return null;
         }
         int arrayLength = 0;
-        for(int i=0; i<array.length; i++){
-            if(array[i]!=null){
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != null) {
                 arrayLength++;
             }
         }
-        if(array instanceof Byte[]){
+        if (array instanceof Byte[]) {
             byte[] unwrappedArray = new byte[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Byte)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Byte) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Short[]){
+        } else if (array instanceof Short[]) {
             short[] unwrappedArray = new short[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Short)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Short) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Integer[]){
+        } else if (array instanceof Integer[]) {
             int[] unwrappedArray = new int[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Integer)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Integer) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Long[]){
+        } else if (array instanceof Long[]) {
             long[] unwrappedArray = new long[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Long)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Long) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Float[]){
+        } else if (array instanceof Float[]) {
             float[] unwrappedArray = new float[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Float)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Float) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Double[]){
+        } else if (array instanceof Double[]) {
             double[] unwrappedArray = new double[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Double)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Double) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Boolean[]){
+        } else if (array instanceof Boolean[]) {
             boolean[] unwrappedArray = new boolean[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Boolean)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Boolean) array[i];
                     unwrappedIndex++;
                 }
             }
             return unwrappedArray;
-        }
-        else if(array instanceof Character[]){
+        } else if (array instanceof Character[]) {
             char[] unwrappedArray = new char[arrayLength];
             int unwrappedIndex = 0;
-            for(int i = 0; i < array.length; i++){
-                if(array[i]!=null){
-                    unwrappedArray[unwrappedIndex] = (Character)array[i];
+            for (int i = 0; i < array.length; i++) {
+                if (array[i] != null) {
+                    unwrappedArray[unwrappedIndex] = (Character) array[i];
                     unwrappedIndex++;
                 }
             }
