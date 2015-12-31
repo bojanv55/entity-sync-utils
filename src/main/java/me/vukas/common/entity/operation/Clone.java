@@ -5,14 +5,17 @@ import me.vukas.common.entity.IgnoredFields;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import static me.vukas.common.base.Objects.createNewObjectOfType;
+import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
 
 public class Clone {
     private Diff diff;
     private Patch patch;
 
-    private final MapStack<Object, Object> clonedElements = new MapStack<Object, Object>();
+    public final Stack<Object> clonedElements = new Stack<Object>();
+    private final Map<Object, Object> originalToRevisedElements = new HashMap<Object, Object>();
 
     @SuppressWarnings("unchecked")
     private Clone(Builder builder) {
@@ -27,12 +30,18 @@ public class Clone {
     }
 
     public <T> T clone(T original){
-        if(this.clonedElements.containsKey(original)){
-            return (T) this.clonedElements.get(original);
+        if(this.originalToRevisedElements.containsKey(original)){
+            return (T) this.originalToRevisedElements.get(original);
         }
         Class originalClass = original == null ? null : original.getClass();
         T cloned = (T) createNewObjectOfType(originalClass);
-        this.clonedElements.push(original, cloned);
+        this.clonedElements.push(original);
+
+        if (originalClass!=null && !isStringOrPrimitiveOrWrapped(originalClass)) {
+            this.originalToRevisedElements.put(original, cloned);
+        }
+
+
         cloned = this.patch.patch(cloned, this.diff.diff(cloned, original));
         this.clonedElements.pop();
         return cloned;
