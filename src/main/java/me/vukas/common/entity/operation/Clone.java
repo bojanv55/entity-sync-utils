@@ -2,6 +2,9 @@ package me.vukas.common.entity.operation;
 
 import me.vukas.common.base.MapStack;
 import me.vukas.common.entity.IgnoredFields;
+import me.vukas.common.entity.Name;
+import me.vukas.common.entity.element.Element;
+import me.vukas.common.entity.key.Key;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +33,12 @@ public class Clone {
     }
 
     public <T> T clone(T original){
+        T result = this.clone(original, true);
+        this.originalToRevisedElements.clear();
+        return result;
+    }
+
+    public <T> T clone(T original, boolean flag){
         if(this.originalToRevisedElements.containsKey(original)){
             return (T) this.originalToRevisedElements.get(original);
         }
@@ -41,8 +50,10 @@ public class Clone {
             this.originalToRevisedElements.put(original, cloned);
         }
 
+        Class revisedClass = original == null ? null : original.getClass();
+        Key<Name, T> rootKey = this.diff.generateKey(Name.ROOT, revisedClass, null, cloned);
 
-        cloned = this.patch.patch(cloned, this.diff.diff(cloned, original));
+        cloned = this.patch.patch(cloned, this.diff.diff(cloned, original, Name.ROOT, revisedClass, null, rootKey));
         this.clonedElements.pop();
         return cloned;
     }

@@ -14,7 +14,8 @@ import static me.vukas.common.base.Objects.getAllFields;
 import static me.vukas.common.base.Objects.isStringOrPrimitiveOrWrapped;
 
 public class Compare {
-    private final MapStack<Object, Object> visitedElements = new MapStack<Object, Object>();
+    private final Stack<Object> visitedElements = new Stack<Object>();
+    private final Map<Object, Object> allVisitedElements = new HashMap<Object, Object>();
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final Map<Class, IgnoredFields> typesToIgnoredFields;
     private final List<EntityComparison<?>> entityComparisons;
@@ -31,10 +32,12 @@ public class Compare {
 
     public <T> boolean compare(T entity1, T entity2) {
         Class entity1Class = entity1 == null ? null : entity1.getClass();
-        return this.compare(entity1, entity2, entity1Class);
+        boolean result = this.compare(entity1, entity2, entity1Class);
+        this.allVisitedElements.clear();
+        return result;
     }
 
-    private <T> boolean compare(T entity1, T entity2, Class fieldType){ //TODO: remove field type?
+    public  <T> boolean compare(T entity1, T entity2, Class fieldType){ //TODO: remove field type?
         if(entity1 == entity2){
             return true;
         }
@@ -47,10 +50,11 @@ public class Compare {
             return entity1.equals(entity2);
         }
 
-        if(this.visitedElements.containsKeyAndValuePair(entity1, entity2)){
-            return true;
+        if(this.visitedElements.contains(entity1)){
+            return this.allVisitedElements.get(entity1).equals(entity2);
         }
-        this.visitedElements.push(entity1, entity2);
+        this.visitedElements.push(entity1);
+        this.allVisitedElements.putIfAbsent(entity1, entity2);
 
         if(fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)){
             EntityComparison<T> entityComparison = new ArrayEntityGeneration<T>(this);
@@ -80,7 +84,8 @@ public class Compare {
             if(shouldTestFieldForEquality(fieldType, field.getDeclaringClass(), field)) {
                 try {
                     field.setAccessible(true);
-                    if (!this.compare(field.get(entity1), field.get(entity2))) {
+                    Class fieldClass = field.get(entity1) == null ? null : field.get(entity1).getClass();
+                    if (!this.compare(field.get(entity1), field.get(entity2), fieldClass)) {
                         this.visitedElements.pop();
                         return false;
                     }

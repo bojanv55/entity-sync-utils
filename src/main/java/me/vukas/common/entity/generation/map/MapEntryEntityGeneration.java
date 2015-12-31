@@ -48,10 +48,12 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
 
     @Override
     public boolean compare(Map.Entry entity1, Map.Entry entity2, Class fieldType) {
-        if(!this.getCompare().compare(entity1.getKey(), entity2.getKey())){
+        Class entity1KeyClass = entity1.getKey() == null ? null : entity1.getKey().getClass();
+        if(!this.getCompare().compare(entity1.getKey(), entity2.getKey(), entity1KeyClass)){
             return false;
         }
-        if(!this.getCompare().compare(entity1.getValue(), entity2.getValue())){
+        Class entity1ValueClass = entity1.getValue() == null ? null : entity1.getValue().getClass();
+        if(!this.getCompare().compare(entity1.getValue(), entity2.getValue(), entity1ValueClass)){
             return false;
         }
         return true;

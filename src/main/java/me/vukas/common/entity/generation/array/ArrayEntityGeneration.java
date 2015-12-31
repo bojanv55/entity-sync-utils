@@ -46,7 +46,8 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
             Class elementType = originalArray[i] == null ? null : originalArray[i].getClass();
             Key<Integer, Object> elementKey = this.getDiff().generateKey(i, elementType, fieldType, originalArray[i]);
             for (int j = 0; j < revisedArray.length; j++) {
-                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]))) {
+                Class entity1Class = originalArray[i] == null ? null : originalArray[i].getClass();
+                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]), entity1Class)) {
                     matchedIndexes.add(j);
                     Element<Integer, Object> element = this.getDiff().diff(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
                     if (i != j) {
@@ -213,14 +214,16 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         }
 
         for(int i=0; i<entity1Array.length; i++){
-            if(!this.getCompare().compare(entity1Array[i], entity2Array[i])){   //TODO: check if this is real array - if it is, it must be ordered!
+            Class entity1Class = entity1Array[i] == null ? null : entity1Array[i].getClass();
+            if(!this.getCompare().compare(entity1Array[i], entity2Array[i], entity1Class)){   //TODO: check if this is real array - if it is, it must be ordered!
 
                 //we possibly compare unordered collections so switch to that mode
                 Set<Integer> visitedIndexes = new HashSet<Integer>();
                 INNER_LOOP:
                 for(int j=i; j<entity1Array.length; j++){
                     for(int k=i; k<entity2Array.length; k++){
-                        if(this.getCompare().compare(entity1Array[j], entity2Array[k]) && !visitedIndexes.contains(k)){
+                        entity1Class = entity1Array[j] == null ? null : entity1Array[j].getClass();
+                        if(this.getCompare().compare(entity1Array[j], entity2Array[k], entity1Class) && !visitedIndexes.contains(k)){
                             visitedIndexes.add(k);
                             continue INNER_LOOP;
                         }

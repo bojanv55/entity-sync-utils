@@ -75,7 +75,11 @@ public class Diff {
     public <T> Element<Name, T> diff(T original, T revised) {
         Class revisedClass = revised == null ? null : revised.getClass();
         Key<Name, T> rootKey = this.generateKey(Name.ROOT, revisedClass, null, original);
-        return this.diff(original, revised, Name.ROOT, revisedClass, null, rootKey);
+        Element<Name, T> result = this.diff(original, revised, Name.ROOT, revisedClass, null, rootKey);
+        this.originalToRevisedElements.clear();
+        this.visitedCircularKeys.clear();
+        this.rootCircularKeys.clear();
+        return result;
     }
 
     public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
@@ -115,7 +119,7 @@ public class Diff {
                 return element;
             }
 
-            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised));
+            return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised, true));
         }
 
         if (revised == null) {
