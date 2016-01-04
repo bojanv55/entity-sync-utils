@@ -84,13 +84,14 @@ public class Diff {
 
     public <N, T> Element<N, T> diff(T original, T revised, N elementName, Class fieldType, Class containerType, Key<N, T> key) {
 
-        if (this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)) {
-            LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
-            this.registerCircularElement(original, element);
-            return element;
-        }
-
         if (original == revised) {
+
+            if (this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)) {
+                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
+                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
+                return element;
+            }
+
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
 
@@ -115,7 +116,7 @@ public class Diff {
 
             if (this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)) {
                 LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
-                this.registerCircularElement(revised, element);
+                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
                 return element;
             }
 
@@ -135,6 +136,12 @@ public class Diff {
                 return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
             }
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, revised);
+        }
+
+        if (this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)) {
+            LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
+            this.registerCircularElement(revised, element);
+            return element;
         }
 
         //TODO: here was if with this.visitedElements.contains(original) - do we need this anymore?
@@ -185,7 +192,7 @@ public class Diff {
                 Object revisedField = field.get(revised);
                 Class revisedFieldType = revisedField == null ? null : revisedField.getClass();
                 Key fieldKey = this.generateKey(field.getName(), field.getType(), field.getDeclaringClass(), originalField);
-                Element element = this.diff(originalField, revisedField, field.getName(), revisedFieldType, field.getDeclaringClass(), fieldKey);
+                Element element = this.diff(this.getRevisedIfCircularReference(originalField), revisedField, field.getName(), revisedFieldType, field.getDeclaringClass(), fieldKey);
                 elements.add(element);
             }
         }

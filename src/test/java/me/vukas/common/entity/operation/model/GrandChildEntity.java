@@ -21,12 +21,26 @@ public class GrandChildEntity extends ChildEntity {
     private Set<GrandChildEntity> parentsSet;
     private Map<GrandChildEntity, GrandChildEntity> parentsMap;
 
+    private Base parentInterface;
+    private Base[] parentInterfaceArray;
+
+    private BaseEntity parentAbstract;
+    private BaseEntity[] parentAbstractArray;
+
     public void setParent1(GrandChildEntity parent1) {
         this.parent1 = parent1;
     }
 
     public void setParent2(GrandChildEntity parent2) {
         this.parent2 = parent2;
+    }
+
+    public void setParentInterface(Base parentInterface) {
+        this.parentInterface = parentInterface;
+    }
+
+    public void setParentAbstract(BaseEntity parentAbstract) {
+        this.parentAbstract = parentAbstract;
     }
 
     public void addParentInArray(int index, GrandChildEntity parent){
@@ -43,6 +57,14 @@ public class GrandChildEntity extends ChildEntity {
 
     public void addParentsInMap(GrandChildEntity key, GrandChildEntity value){
         this.parentsMap.put(key, value);
+    }
+
+    public void addParentInInterfaceArray(int index, Base parent){
+        this.parentInterfaceArray[index] = parent;
+    }
+
+    public void addParentInAbstractArray(int index, BaseEntity parent){
+        this.parentAbstractArray[index] = parent;
     }
 
     public GrandChildEntity(boolean init){
@@ -76,5 +98,8 @@ public class GrandChildEntity extends ChildEntity {
         this.parentsList = new ArrayList<GrandChildEntity>();
         this.parentsSet = new HashSet<GrandChildEntity>();
         this.parentsMap = new HashMap<GrandChildEntity, GrandChildEntity>();
+
+        this.parentInterfaceArray = new Base[sequenceNumber];
+        this.parentAbstractArray = new BaseEntity[sequenceNumber];
     }
 }

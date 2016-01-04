@@ -394,6 +394,10 @@ public class PatchTests {
         gce1.addParentInArray(0, gce1);
         gce1.addParentsInMap(gce1, gce1);
         gce1.addParentsInMap(gce2, gce1);
+        gce1.setParentInterface(gce2);
+        gce1.setParentAbstract(gce1);
+        gce1.addParentInInterfaceArray(0, gce1);
+        gce1.addParentInAbstractArray(0, gce2);
         gce2.setParent1(gce1);
         gce2.setParent2(gce2);
         gce2.addParentInList(gce2);
@@ -424,6 +428,10 @@ public class PatchTests {
         gce3.addParentInArray(0, gce3);
         gce3.addParentsInMap(gce3, gce3);
         gce3.addParentsInMap(gce4, gce3);
+        gce3.setParentInterface(gce4);
+        gce3.setParentAbstract(gce3);
+        gce3.addParentInInterfaceArray(0, gce3);
+        gce3.addParentInAbstractArray(0, gce4);
         gce4.setParent1(gce3);
         gce4.setParent2(gce4);
         gce4.addParentInList(gce4);
