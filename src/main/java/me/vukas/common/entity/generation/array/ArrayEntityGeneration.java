@@ -46,9 +46,9 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
             Key<Integer, Object> elementKey = this.getDiff().generateKey(i, elementType, fieldType, originalArray[i]);
             for (int j = 0; j < revisedArray.length; j++) {
                 Class entity1Class = originalArray[i] == null ? null : originalArray[i].getClass();
-                if (!matchedIndexes.contains(j) && this.getCompare().compare(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]), entity1Class)) {
+                if (!matchedIndexes.contains(j) && this.getCompare().compare(this.getDiff().getRevisedIfCircularReference(originalArray[i]), revisedArray[j], entity1Class)) {
                     matchedIndexes.add(j);
-                    Element<Integer, Object> element = this.getDiff().diff(originalArray[i], this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
+                    Element<Integer, Object> element = this.getDiff().diff(this.getDiff().getRevisedIfCircularReference(originalArray[i]), revisedArray[j], j, elementType, fieldType, elementKey);
                     if (i != j) {
                         if (element.getStatus() == Element.Status.EQUAL) {
                             element.setStatus(Element.Status.EQUAL_MOVED);
@@ -75,7 +75,7 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                 //LeafElement element = new LeafElement<Integer, Object>(j, Element.Status.ADDED, null, Name.CIRCULAR_REFERENCE);
                 Class elementType = revisedArray[j] == null ? null : revisedArray[j].getClass();
                 Key<Integer, Object> elementKey = this.getDiff().generateKey(j, elementType, fieldType, null);
-                Element element = this.getDiff().diff(null, this.getDiff().getRevisedIfCircularReference(revisedArray[j]), j, elementType, fieldType, elementKey);
+                Element element = this.getDiff().diff(null, revisedArray[j], j, elementType, fieldType, elementKey);
                 element.setStatus(Element.Status.ADDED);
                 elements.add(element);
                 //}

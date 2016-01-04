@@ -140,7 +140,7 @@ public class Diff {
 
         if (this.rootCircularKeys.containsKey(original) && this.originalToRevisedElements.containsKey(original)) {
             LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
-            this.registerCircularElement(revised, element);
+            this.registerCircularElement(original, element);
             return element;
         }
 

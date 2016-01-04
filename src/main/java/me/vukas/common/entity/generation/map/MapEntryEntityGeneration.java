@@ -14,11 +14,11 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
     public <N> Element<N, Map.Entry> diff(Map.Entry original, Map.Entry revised, N elementName, Class fieldType, Class containerType, Key<N, Map.Entry> key) {
         Class revisedKeyClass = revised.getKey() == null ? null : revised.getKey().getClass();
         Key keyKey = this.getDiff().generateKey(elementName, revisedKeyClass, fieldType, original == null ? null : original.getKey());
-        Element keyElement = this.getDiff().diff(original == null ? null : original.getKey(), this.getDiff().getRevisedIfCircularReference(revised.getKey()), elementName, revisedKeyClass, fieldType, keyKey);
+        Element keyElement = this.getDiff().diff(original == null ? null : this.getDiff().getRevisedIfCircularReference(original.getKey()), revised.getKey(), elementName, revisedKeyClass, fieldType, keyKey);
 
         Class revisedValueClass = revised.getValue() == null ? null : revised.getValue().getClass();
         Key valueKey = this.getDiff().generateKey(elementName, revisedValueClass, fieldType, original == null ? null : original.getValue());
-        Element valueElement = this.getDiff().diff(original == null ? null : original.getValue(), this.getDiff().getRevisedIfCircularReference(revised.getValue()), elementName, revisedValueClass, fieldType, valueKey);
+        Element valueElement = this.getDiff().diff(original == null ? null : this.getDiff().getRevisedIfCircularReference(original.getValue()), revised.getValue(), elementName, revisedValueClass, fieldType, valueKey);
 
         Element.Status status = Element.Status.EQUAL;
         if (keyElement.getStatus() != Element.Status.EQUAL || valueElement.getStatus() != Element.Status.EQUAL) {
