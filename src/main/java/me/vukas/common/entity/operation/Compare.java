@@ -45,7 +45,7 @@ public class Compare {
             return false;
         }
 
-        if (isStringOrPrimitiveOrWrapped(fieldType)) {
+        if (isStringOrPrimitiveOrWrapped(fieldType) || Enum.class.isAssignableFrom(fieldType)) {
             return entity1.equals(entity2);
         }
 

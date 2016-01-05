@@ -29,7 +29,7 @@ public class ArrayNodeKey<N, V> extends NodeKey<N, V> {
         Iterator<Key<?, ?>> childIterator = this.getChildren().iterator();
         while (childIterator.hasNext()) {
             Key child = childIterator.next();
-            if (!child.match(array[(Integer) child.getName()])) {
+            if (!(array.length > (Integer) child.getName()) || !child.match(array[(Integer) child.getName()])) {
                 INNER_LOOP:
                 while (childIterator.hasNext()) {
                     child = childIterator.next();

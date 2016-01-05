@@ -27,6 +27,9 @@ public class GrandChildEntity extends ChildEntity {
     private BaseEntity parentAbstract;
     private BaseEntity[] parentAbstractArray;
 
+    private Base[] parentRecursiveInterfaceArray;
+    private List<Base> parentRecursiveInterfaceList;
+
     public void setParent1(GrandChildEntity parent1) {
         this.parent1 = parent1;
     }
@@ -47,8 +50,20 @@ public class GrandChildEntity extends ChildEntity {
         this.parentsArray[index] = parent;
     }
 
+    public GrandChildEntity[] getParentsArray() {
+        return parentsArray;
+    }
+
+    public void setParentsList(List<GrandChildEntity> parentsList) {
+        this.parentsList = parentsList;
+    }
+
     public void addParentInList(GrandChildEntity parent){
         this.parentsList.add(parent);
+    }
+
+    public List<GrandChildEntity> getParentsList() {
+        return parentsList;
     }
 
     public void addParentInSet(GrandChildEntity parent){
@@ -65,6 +80,10 @@ public class GrandChildEntity extends ChildEntity {
 
     public void addParentInAbstractArray(int index, BaseEntity parent){
         this.parentAbstractArray[index] = parent;
+    }
+
+    public void setParentRecursiveInterfaceArray(Base[] parentRecursiveInterfaceArray) {
+        this.parentRecursiveInterfaceArray = parentRecursiveInterfaceArray;
     }
 
     public GrandChildEntity(boolean init){

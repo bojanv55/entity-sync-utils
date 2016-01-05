@@ -4,6 +4,7 @@ import me.vukas.common.entity.EntityDefinition;
 import me.vukas.common.entity.IgnoredFields;
 import me.vukas.common.entity.Name;
 import me.vukas.common.entity.element.Element;
+import me.vukas.common.entity.operation.model.Base;
 import me.vukas.common.entity.operation.model.BaseEntity;
 import me.vukas.common.entity.operation.model.GrandChildEntity;
 import org.junit.Before;
@@ -310,7 +311,7 @@ public class PatchTests {
     }
 
     @Test
-    public void patchingObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph() throws FileNotFoundException {
+    public void patchingObjectGraphWithObjectGraphWitchCircularReferencesShouldProduceObjectGraph() {
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
         gce1.setParent1(gce2);
@@ -326,6 +327,7 @@ public class PatchTests {
         gce1.addParentInArray(0, gce1);
         gce1.addParentsInMap(gce1, gce1);
         gce1.addParentsInMap(gce2, gce1);
+        gce1.setParentRecursiveInterfaceArray(gce2.getParentsArray());
         gce2.setParent1(gce1);
         gce2.setParent2(gce2);
         gce2.addParentInList(gce2);
@@ -340,6 +342,7 @@ public class PatchTests {
         gce2.addParentsInMap(null, gce1);
         gce2.addParentsInMap(gce1, null);
         gce2.addParentsInMap(gce2, gce1);
+        gce2.setParentRecursiveInterfaceArray(gce1.getParentsArray());
 
         GrandChildEntity gce3 = new GrandChildEntity(1);
         GrandChildEntity gce4 = new GrandChildEntity(2);
@@ -356,6 +359,7 @@ public class PatchTests {
         gce3.addParentInArray(0, gce3);
         gce3.addParentsInMap(gce3, gce3);
         gce3.addParentsInMap(gce4, gce3);
+        gce3.setParentRecursiveInterfaceArray(gce4.getParentsArray());
         gce4.setParent1(gce3);
         gce4.setParent2(gce4);
         gce4.addParentInList(gce4);
@@ -370,6 +374,35 @@ public class PatchTests {
         gce4.addParentsInMap(null, gce3);
         gce4.addParentsInMap(gce3, null);
         gce4.addParentsInMap(gce4, gce3);
+        gce4.setParentRecursiveInterfaceArray(gce3.getParentsArray());
+
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
+        assertThat(this.compare.compare(patched, gce2), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectGraphWitchRepeatingListReferencesShouldProduceObjectGraph() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce1.addParentInList(gce1);
+        gce1.addParentInList(gce2);
+        gce1.addParentInList(gce1);
+        gce1.addParentInList(gce2);
+        gce2.addParentInList(gce1);
+        gce2.addParentInSet(gce2);
+        gce2.setParentsList(gce1.getParentsList());
+
+        GrandChildEntity gce3 = new GrandChildEntity(1);
+        GrandChildEntity gce4 = new GrandChildEntity(2);
+        gce3.addParentInList(gce3);
+        gce3.addParentInList(gce4);
+        gce3.addParentInList(gce3);
+        gce3.addParentInList(gce4);
+        gce4.addParentInList(gce4);
+        gce4.addParentInList(gce3);
+        gce4.setParentsList(gce3.getParentsList());
 
         Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
         GrandChildEntity patched = this.patch.patch(gce3, diffElement);
@@ -398,6 +431,7 @@ public class PatchTests {
         gce1.setParentAbstract(gce1);
         gce1.addParentInInterfaceArray(0, gce1);
         gce1.addParentInAbstractArray(0, gce2);
+        gce1.setParentRecursiveInterfaceArray(gce1.getParentsArray());
         gce2.setParent1(gce1);
         gce2.setParent2(gce2);
         gce2.addParentInList(gce2);
@@ -412,6 +446,7 @@ public class PatchTests {
         gce2.addParentsInMap(null, gce1);
         gce2.addParentsInMap(gce1, null);
         gce2.addParentsInMap(gce2, gce1);
+        gce2.setParentRecursiveInterfaceArray(gce1.getParentsArray());
 
         GrandChildEntity gce3 = new GrandChildEntity(1);
         GrandChildEntity gce4 = new GrandChildEntity(2);
@@ -432,6 +467,7 @@ public class PatchTests {
         gce3.setParentAbstract(gce3);
         gce3.addParentInInterfaceArray(0, gce3);
         gce3.addParentInAbstractArray(0, gce4);
+        gce3.setParentRecursiveInterfaceArray(gce3.getParentsArray());
         gce4.setParent1(gce3);
         gce4.setParent2(gce4);
         gce4.addParentInList(gce4);
@@ -446,6 +482,8 @@ public class PatchTests {
         gce4.addParentsInMap(null, gce3);
         gce4.addParentsInMap(gce3, null);
         gce4.addParentsInMap(gce4, gce3);
+        gce4.setParentRecursiveInterfaceArray(gce3.getParentsArray());
+
 
         EntityDefinition entityDefinition = new EntityDefinition(GrandChildEntity.class, "commonInt", "commonString");
         Diff diff = new Diff.Builder().registerEntity(entityDefinition).build();
