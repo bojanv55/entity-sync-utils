@@ -110,7 +110,7 @@ public class Diff {
 
             if (this.rootCircularKeys.containsKey(revised) && (this.originalToRevisedElements.containsKey(revised) || this.revisedToOriginalElements.containsKey(revised))) {
 
-                return this.diff((T) this.getRevisedIfCircularReference(revised), revised, elementName, fieldType, containerType, key);
+                return this.diff(this.getRevisedIfCircularReference(revised), revised, elementName, fieldType, containerType, key);
             }
 
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
