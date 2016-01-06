@@ -109,20 +109,9 @@ public class Diff {
             }
 
             if (this.rootCircularKeys.containsKey(revised) && (this.originalToRevisedElements.containsKey(revised) || this.revisedToOriginalElements.containsKey(revised))) {
-//                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
-//                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
-//                return element;
-
-                Key elementKey = this.generateKey(elementName, fieldType, containerType, (T) this.getRevisedIfCircularReference(revised));
 
                 return this.diff((T) this.getRevisedIfCircularReference(revised), revised, elementName, fieldType, containerType, key);
             }
-
-//            if (this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)) {
-//                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
-//                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
-//                return element;
-//            }
 
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
@@ -253,10 +242,6 @@ public class Diff {
             return (T) this.revisedToOriginalElements.get(original);
         }
         return original;
-    }
-
-    public <T> boolean isCircularReferenced(T original) {
-        return this.originalToRevisedElements.containsKey(original);
     }
 
     public <T> void registerCircularElement(T original, LeafElement element) {

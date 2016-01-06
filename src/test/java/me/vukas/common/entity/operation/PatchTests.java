@@ -390,8 +390,7 @@ public class PatchTests {
         gce1.addParentInList(gce2);
         gce1.addParentInList(gce1);
         gce1.addParentInList(gce2);
-        gce2.addParentInList(gce1);
-        gce2.addParentInSet(gce2);
+        gce2.addParentInSet(gce1);
         gce2.setParentsList(gce1.getParentsList());
 
         GrandChildEntity gce3 = new GrandChildEntity(1);
@@ -400,8 +399,7 @@ public class PatchTests {
         gce3.addParentInList(gce4);
         gce3.addParentInList(gce3);
         gce3.addParentInList(gce4);
-        gce4.addParentInList(gce4);
-        gce4.addParentInList(gce3);
+        gce4.addParentInSet(gce3);
         gce4.setParentsList(gce3.getParentsList());
 
         Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
