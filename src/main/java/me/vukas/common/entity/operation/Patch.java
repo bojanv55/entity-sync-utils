@@ -1,5 +1,6 @@
 package me.vukas.common.entity.operation;
 
+import me.vukas.common.base.Objects;
 import me.vukas.common.entity.EntityGeneration;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;

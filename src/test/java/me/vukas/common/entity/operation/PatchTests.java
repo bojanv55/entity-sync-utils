@@ -409,6 +409,96 @@ public class PatchTests {
     }
 
     @Test
+    public void patchingObjectGraphWithObjectGraphWitchRepeatingArrayReferencesShouldProduceObjectGraph() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce1.addParentInArray(0, gce1);
+        gce2.addParentInSet(gce1);
+
+        GrandChildEntity gce3 = new GrandChildEntity(1);
+        GrandChildEntity gce4 = new GrandChildEntity(2);
+        gce3.addParentInArray(0, gce3);
+        gce4.addParentInSet(gce3);
+
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
+        assertThat(this.compare.compare(patched, gce2), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectGraphWitchRepeatingArrayReferences2ShouldProduceObjectGraph() {
+        GrandChildEntity gce1 = new GrandChildEntity(4);
+        GrandChildEntity gce2 = new GrandChildEntity(5);
+        gce1.addParentInArray(0, gce1);
+        gce1.addParentInArray(1, gce2);
+        gce1.addParentInArray(2, gce1);
+        gce1.addParentInArray(3, gce2);
+        gce2.addParentInSet(gce1);
+
+        GrandChildEntity gce3 = new GrandChildEntity(4);
+        GrandChildEntity gce4 = new GrandChildEntity(5);
+        gce3.addParentInArray(0, gce3);
+        gce3.addParentInArray(1, gce4);
+        gce3.addParentInArray(2, gce3);
+        gce3.addParentInArray(3, gce4);
+        gce4.addParentInSet(gce3);
+
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
+        assertThat(this.compare.compare(patched, gce2), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectInList2ShouldProduceObjectGraph() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce1.addParentInList(gce2);
+
+        GrandChildEntity gce3 = new GrandChildEntity(1);
+        GrandChildEntity gce4 = new GrandChildEntity(2);
+        gce3.addParentInList(gce4);
+
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
+        assertThat(this.compare.compare(patched, gce2), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectGraph2ShouldProduceObjectGraph() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce1.setParent1(gce2);
+
+        GrandChildEntity gce3 = new GrandChildEntity(1);
+        GrandChildEntity gce4 = new GrandChildEntity(2);
+        gce3.setParent1(gce4);
+
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
+        assertThat(this.compare.compare(patched, gce2), is(true));
+    }
+
+    @Test
+    public void patchingObjectGraphWithObjectInListShouldProduceObjectGraph() {
+        GrandChildEntity gce1 = new GrandChildEntity(1);
+        GrandChildEntity gce2 = new GrandChildEntity(2);
+        gce2.addParentInList(gce1);
+
+        GrandChildEntity gce3 = new GrandChildEntity(1);
+        GrandChildEntity gce4 = new GrandChildEntity(2);
+        gce4.addParentInList(gce3);
+
+        Element<Name, GrandChildEntity> diffElement = this.diff.diff(gce1, gce2);
+        GrandChildEntity patched = this.patch.patch(gce3, diffElement);
+
+        assertThat(this.compare.compare(patched, gce2), is(true));
+    }
+
+    @Test
     public void patchingObjectGraphWithObjectGraphWitchCircularReferencesUsingPartialKeyShouldProduceObjectGraph(){
         GrandChildEntity gce1 = new GrandChildEntity(1);
         GrandChildEntity gce2 = new GrandChildEntity(2);
