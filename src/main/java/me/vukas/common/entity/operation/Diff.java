@@ -122,7 +122,6 @@ public class Diff {
             if (fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
                 EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this, this.compare);
                 Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
-                //this.visitedElements.pop();
                 return element;
             }
 
@@ -130,7 +129,6 @@ public class Diff {
                 if (entityGeneration.getType().isAssignableFrom(fieldType)) {
                     EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>) entityGeneration;
                     Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
-                    //this.visitedElements.pop();
                     return element;
                 }
             }
