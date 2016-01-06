@@ -26,6 +26,7 @@ public class Diff {
     private final Map<Object, CircularKey> rootCircularKeys = new HashMap<Object, CircularKey>();
 
     private final Map<Object, Object> originalToRevisedElements = new HashMap<Object, Object>();
+    private final Map<Object, Object> revisedToOriginalElements = new HashMap<Object, Object>();
 
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final Map<Class, IgnoredFields> typesToIgnoredFields;
@@ -77,6 +78,7 @@ public class Diff {
         Key<Name, T> rootKey = this.generateKey(Name.ROOT, revisedClass, null, original);
         Element<Name, T> result = this.diff(original, revised, Name.ROOT, revisedClass, null, rootKey);
         this.originalToRevisedElements.clear();
+        this.revisedToOriginalElements.clear();
         this.visitedCircularKeys.clear();
         this.rootCircularKeys.clear();
         return result;
@@ -86,11 +88,41 @@ public class Diff {
 
         if (original == revised) {
 
-            if (this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)) {
-                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
-                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
-                return element;
+            if(fieldType!=null){
+                if (fieldType.isArray() || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+                    this.visitedElements.push(original);
+                    EntityGeneration<T> entityGeneration = new ArrayEntityGeneration<T>(this, this.compare);
+                    Element<N, T> element = entityGeneration.diff(original, revised, elementName, fieldType, containerType, key);
+                    this.visitedElements.pop();
+                    return element;
+                }
+
+                for (EntityGeneration<?> entityGeneration : this.entityGenerations) { //TODO: class hierarchy priority
+                    if (entityGeneration.getType().isAssignableFrom(fieldType)) {
+                        this.visitedElements.push(original);
+                        EntityGeneration<T> entityGenerationCasted = (EntityGeneration<T>) entityGeneration;
+                        Element<N, T> element = entityGenerationCasted.diff(original, revised, elementName, fieldType, containerType, key);
+                        this.visitedElements.pop();
+                        return element;
+                    }
+                }
             }
+
+            if (this.rootCircularKeys.containsKey(revised) && (this.originalToRevisedElements.containsKey(revised) || this.revisedToOriginalElements.containsKey(revised))) {
+//                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
+//                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
+//                return element;
+
+                Key elementKey = this.generateKey(elementName, fieldType, containerType, (T) this.getRevisedIfCircularReference(revised));
+
+                return this.diff((T) this.getRevisedIfCircularReference(revised), revised, elementName, fieldType, containerType, key);
+            }
+
+//            if (this.rootCircularKeys.containsKey(revised) && this.originalToRevisedElements.containsKey(revised)) {
+//                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
+//                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
+//                return element;
+//            }
 
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
         }
@@ -165,6 +197,7 @@ public class Diff {
         }
 
         this.originalToRevisedElements.put(original, revised);
+        this.revisedToOriginalElements.put(revised, original);
 
         List<Element<?, ?>> elements = this.processFields(fieldType, original, revised);
 
@@ -215,6 +248,9 @@ public class Diff {
     public <T> T getRevisedIfCircularReference(T original) {
         if (this.originalToRevisedElements.containsKey(original)) {
             return (T) this.originalToRevisedElements.get(original);
+        }
+        if (this.revisedToOriginalElements.containsKey(original)) {
+            return (T) this.revisedToOriginalElements.get(original);
         }
         return original;
     }
