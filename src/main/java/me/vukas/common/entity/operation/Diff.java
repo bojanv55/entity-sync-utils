@@ -6,10 +6,7 @@ import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.array.ArrayEntityGeneration;
 import me.vukas.common.entity.generation.map.MapEntryEntityGeneration;
-import me.vukas.common.entity.key.CircularKey;
-import me.vukas.common.entity.key.Key;
-import me.vukas.common.entity.key.LeafKey;
-import me.vukas.common.entity.key.NodeKey;
+import me.vukas.common.entity.key.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -27,6 +24,8 @@ public class Diff {
 
     private final Map<Object, Object> originalToRevisedElements = new HashMap<Object, Object>();
     private final Map<Object, Object> revisedToOriginalElements = new HashMap<Object, Object>();
+    private final Map<Object, Object> originalToNewElements = new HashMap<Object, Object>();
+    private final Map<Object, Object> newToOriginalElements = new HashMap<Object, Object>();
 
     private final Map<Class, EntityDefinition> typesToEntityDefinitions;
     private final Map<Class, IgnoredFields> typesToIgnoredFields;
@@ -79,6 +78,8 @@ public class Diff {
         Element<Name, T> result = this.diff(original, revised, Name.ROOT, revisedClass, null, rootKey);
         this.originalToRevisedElements.clear();
         this.revisedToOriginalElements.clear();
+        this.originalToNewElements.clear();
+        this.newToOriginalElements.clear();
         this.visitedCircularKeys.clear();
         this.rootCircularKeys.clear();
         return result;
@@ -143,6 +144,43 @@ public class Diff {
                 this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
                 return element;
             }
+
+            if (this.revisedToOriginalElements.containsKey(revised) && this.rootCircularKeys.containsKey(this.revisedToOriginalElements.get(revised))) {
+                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
+                this.registerCircularElement(this.revisedToOriginalElements.get(revised), element);
+                return element;
+            }
+
+            if (this.originalToRevisedElements.containsKey(revised) && !this.originalToRevisedElements.containsKey(this.originalToRevisedElements.get(revised)) && this.rootCircularKeys.containsKey(this.originalToRevisedElements.get(revised))) {
+                T pass = null;
+                if(this.originalToNewElements.containsKey(revised)){
+                    CircularLeafKey elementKey = (CircularLeafKey) this.generateKey(elementName, fieldType, containerType, revised);
+
+                    LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, elementKey, (T) Name.CIRCULAR_REFERENCE);
+                    elementKey.registerCircularElement(element);
+                    this.registerCircularElement(revised, element);
+                    return element;
+                }
+                else{
+                    pass = (T)createNewObjectOfType(fieldType);
+                    this.originalToNewElements.put(revised, pass);
+                    this.newToOriginalElements.put(pass, revised);
+                }
+                return this.diff(pass, revised, elementName, fieldType, containerType, key);
+            }
+
+//            if (!this.originalToRevisedElements.containsKey(revised) && this.rootCircularKeys.containsKey(this.revisedToOriginalElements.get(revised))) {
+//                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
+//                this.registerCircularElement(this.revisedToOriginalElements.get(revised), element);
+//                return element;
+//            }
+
+//            if (this.revisedToOriginalElements.containsKey(revised) && this.originalToRevisedElements.containsKey(this.revisedToOriginalElements.get(revised)) && this.rootCircularKeys.containsKey(this.revisedToOriginalElements.get(revised))) {
+////                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
+////                this.registerCircularElement(revised, element);
+////                return element;
+//                return null;
+//            }
 
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised, true));
         }
@@ -254,6 +292,12 @@ public class Diff {
     public <N, T> Key<N, T> generateKey(N elementName, Class elementType, Class containerType, T value) {
         if (value == null || elementType == null || isStringOrPrimitiveOrWrapped(elementType) || Enum.class.isAssignableFrom(elementType)) {
             return new LeafKey<N, T>(elementName, elementType, containerType, value);
+        }
+
+        if(this.originalToNewElements.containsKey(value) && this.rootCircularKeys.containsKey(value)){
+            CircularLeafKey<N, T> key = new CircularLeafKey<N, T>(elementName, elementType, containerType, (T) Name.CIRCULAR_REFERENCE);
+            this.rootCircularKeys.get(value).registerCircularKey(key);
+            return key;
         }
 
         if (this.rootCircularKeys.containsKey(value)) {

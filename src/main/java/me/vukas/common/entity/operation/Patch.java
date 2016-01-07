@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static me.vukas.common.base.Objects.createNewObjectOfType;
+
 public class Patch {
     private final List<EntityGeneration<?>> entityGenerations;
 
@@ -51,6 +53,10 @@ public class Patch {
         }
 
         //TODO: must be an object?
+        if(original == null){
+            original = (T) createNewObjectOfType(diff.getKey().getType());
+        }
+
         for (Object childElement : ((NodeElement) diff).getChildren()) {
             Field field = ((Element) childElement).getKey().getAccessibleDeclaredFiled();
             try {

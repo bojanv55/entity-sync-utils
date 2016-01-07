@@ -2,6 +2,7 @@ package me.vukas.common.entity.operation;
 
 import me.vukas.common.entity.IgnoredFields;
 import me.vukas.common.entity.Name;
+import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.key.Key;
 
 import java.util.HashMap;

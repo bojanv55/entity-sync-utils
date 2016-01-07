@@ -5,6 +5,7 @@ import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.array.key.ArrayNodeKey;
+import me.vukas.common.entity.key.CircularLeafKey;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.operation.Compare;
 import me.vukas.common.entity.operation.Diff;
@@ -13,6 +14,7 @@ import me.vukas.common.entity.operation.Patch;
 import java.util.*;
 
 import static me.vukas.common.base.Arrays.*;
+import static me.vukas.common.base.Objects.createNewObjectOfType;
 
 public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
 
@@ -137,7 +139,10 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                 //collection is ordered so we can process it as usual
                 insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(originalArray[(Integer) childElement.getKey().getName()], childElement));
             } else if (childElement.getStatus() == Element.Status.ADDED) {
-                insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(null, childElement));
+                if(childElement.getKey() instanceof CircularLeafKey){
+                    int ss = 3;
+                }
+                insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(childElement.getKey() instanceof CircularLeafKey ? (T) createNewObjectOfType(childElement.getKey().getType()) : null, childElement));
             }
         }
 
