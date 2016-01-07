@@ -108,9 +108,14 @@ public class Diff {
                 }
             }
 
-            if (this.rootCircularKeys.containsKey(revised) && (this.originalToRevisedElements.containsKey(revised) || this.revisedToOriginalElements.containsKey(revised))) {
+            if (!this.originalToRevisedElements.containsKey(revised) && this.rootCircularKeys.containsKey(revised)) {
+                LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, (T) Name.CIRCULAR_REFERENCE);
+                this.registerCircularElement(revised, element);
+                return element;
+            }
 
-                return this.diff(this.getRevisedIfCircularReference(revised), revised, elementName, fieldType, containerType, key);
+            if (this.originalToRevisedElements.containsKey(revised) && this.rootCircularKeys.containsKey(revised)) {
+                return this.diff((T)this.originalToRevisedElements.get(revised), revised, elementName, fieldType, containerType, key);
             }
 
             return new LeafElement<N, T>(elementName, Element.Status.EQUAL, key, revised);
@@ -133,15 +138,10 @@ public class Diff {
                 }
             }
 
-            if (this.rootCircularKeys.containsKey(revised) && (this.originalToRevisedElements.containsKey(revised) && this.revisedToOriginalElements.containsKey(revised))) {
+            if (this.originalToRevisedElements.containsKey(revised) && this.originalToRevisedElements.containsKey(this.originalToRevisedElements.get(revised)) && this.rootCircularKeys.containsKey(this.originalToRevisedElements.get(revised))) {
                 LeafElement<N, T> element = new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, (T) Name.CIRCULAR_REFERENCE);
-                this.registerCircularElement(this.revisedToOriginalElements.get(revised), element);
+                this.registerCircularElement(this.originalToRevisedElements.get(revised), element);
                 return element;
-            }
-
-            if (this.rootCircularKeys.containsKey(revised) && (this.originalToRevisedElements.containsKey(revised) || this.revisedToOriginalElements.containsKey(revised))) {
-
-                return this.diff(this.getRevisedIfCircularReference(revised), revised, elementName, fieldType, containerType, key);
             }
 
             return new LeafElement<N, T>(elementName, Element.Status.MODIFIED, key, this.clone.clone(revised, true));
