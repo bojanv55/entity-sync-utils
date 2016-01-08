@@ -37,24 +37,37 @@ public class Clone {
         return result;
     }
 
-    public <T> T clone(T original, boolean flag) {
-        if (this.originalToRevisedElements.containsKey(original)) {
-            return (T) this.originalToRevisedElements.get(original);
-        }
-        Class originalClass = original == null ? null : original.getClass();
-        T cloned = (T) createNewObjectOfType(originalClass);
-        this.clonedElements.push(original);
+//    public <T> T clone(T original, boolean flag) {
+//        if (this.originalToRevisedElements.containsKey(original)) {
+//            return (T) this.originalToRevisedElements.get(original);
+//        }
+//        Class originalClass = original == null ? null : original.getClass();
+//        T cloned = (T) createNewObjectOfType(originalClass);
+//        this.clonedElements.push(original);
+//
+//        if (originalClass != null && !isStringOrPrimitiveOrWrapped(originalClass)) {
+//            this.originalToRevisedElements.put(original, cloned);
+//        }
+//
+//        Class revisedClass = original == null ? null : original.getClass();
+//        Key<Name, T> rootKey = this.diff.generateKey(Name.ROOT, revisedClass, null, cloned);
+//
+//        cloned = this.patch.patch(cloned, this.diff.diff(cloned, original, Name.ROOT, revisedClass, null, rootKey));
+//        this.clonedElements.pop();
+//        return cloned;
+//    }
 
-        if (originalClass != null && !isStringOrPrimitiveOrWrapped(originalClass)) {
-            this.originalToRevisedElements.put(original, cloned);
-        }
+    public <T> T clone(T original, boolean flag) {
+
 
         Class revisedClass = original == null ? null : original.getClass();
+
+        T cloned = (T) createNewObjectOfType(revisedClass);
+
         Key<Name, T> rootKey = this.diff.generateKey(Name.ROOT, revisedClass, null, cloned);
 
-        cloned = this.patch.patch(cloned, this.diff.diff(cloned, original, Name.ROOT, revisedClass, null, rootKey));
-        this.clonedElements.pop();
-        return cloned;
+        return this.patch.patch(cloned, this.diff.diff(cloned, original, Name.ROOT, revisedClass, null, rootKey));
+
     }
 
     public static class Builder {

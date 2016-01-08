@@ -3,11 +3,10 @@ package me.vukas.common.entity.generation.array.key;
 import me.vukas.common.entity.key.Key;
 import me.vukas.common.entity.key.NodeKey;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Array;
+import java.util.*;
 
+import static me.vukas.common.base.Arrays.insert;
 import static me.vukas.common.base.Arrays.wrapCollectionOrMapOrPrimitiveArray;
 
 public class ArrayNodeKey<N, V> extends NodeKey<N, V> {
@@ -46,5 +45,43 @@ public class ArrayNodeKey<N, V> extends NodeKey<N, V> {
             }
         }
         return true;
+    }
+
+    @Override
+    public <T> T makeChild() throws NoSuchFieldException, IllegalAccessException {
+
+        if (Collection.class.isAssignableFrom(this.getType())) {
+            Collection newCollection = null;
+
+                newCollection = new ArrayList();
+
+            if(Set.class.isAssignableFrom(this.getType())){
+                newCollection = new HashSet();
+            }
+
+
+            for(Key child : this.getChildren()){
+                newCollection.add(child == null ? null : child.makeChild());
+            }
+            return (T) newCollection;
+        } else if (Map.class.isAssignableFrom(this.getType())) {
+            Map newMap = null;
+                newMap = new HashMap();
+
+            for(Key child : this.getChildren()){
+                Map.Entry mapEntry = (Map.Entry) child.makeChild();
+                newMap.put(mapEntry.getKey(), mapEntry.getValue());
+            }
+
+            return (T) newMap;
+        }
+
+
+        T newArray = (T) Array.newInstance(this.getType().getComponentType(), this.length);
+        int index = 0;
+        for(Key child : this.getChildren()){
+            insert(newArray, index++, child.makeChild());
+        }
+        return newArray;
     }
 }

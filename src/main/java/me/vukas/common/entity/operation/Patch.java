@@ -32,7 +32,7 @@ public class Patch {
         Class originalType = diff.getKey() == null ? null : diff.getKey().getType();
 
         if (diff.getKey() != null && !diff.getKey().match(original)) {
-            throw new UnsupportedOperationException("Key does not match");
+            //throw new UnsupportedOperationException("Key does not match");
         }
 
         if (diff instanceof LeafElement) {
@@ -53,9 +53,6 @@ public class Patch {
         }
 
         //TODO: must be an object?
-        if(original == null){
-            original = (T) createNewObjectOfType(diff.getKey().getType());
-        }
 
         for (Object childElement : ((NodeElement) diff).getChildren()) {
             Field field = ((Element) childElement).getKey().getAccessibleDeclaredFiled();

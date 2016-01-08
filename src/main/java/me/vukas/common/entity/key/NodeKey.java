@@ -1,5 +1,7 @@
 package me.vukas.common.entity.key;
 
+import me.vukas.common.base.Objects;
+
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -24,6 +26,18 @@ public class NodeKey<N, V> extends CircularKey<N, V> {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public <T> T makeChild() throws NoSuchFieldException, IllegalAccessException {
+        T ob = (T) Objects.createNewObjectOfType(this.getType());
+        for (Key child : this.children) {
+            String fieldName = (String) child.getName();
+            Field field = child.getContainer().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(ob, child.makeChild());
+        }
+        return ob;
     }
 
     private boolean matchKey(V value) throws NoSuchFieldException, IllegalAccessException {

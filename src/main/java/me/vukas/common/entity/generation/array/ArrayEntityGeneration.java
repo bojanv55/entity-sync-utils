@@ -5,8 +5,11 @@ import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.element.LeafElement;
 import me.vukas.common.entity.element.NodeElement;
 import me.vukas.common.entity.generation.array.key.ArrayNodeKey;
+import me.vukas.common.entity.generation.map.key.MapEntryNodeKey;
 import me.vukas.common.entity.key.CircularLeafKey;
 import me.vukas.common.entity.key.Key;
+import me.vukas.common.entity.key.LeafKey;
+import me.vukas.common.entity.key.NodeKey;
 import me.vukas.common.entity.operation.Compare;
 import me.vukas.common.entity.operation.Diff;
 import me.vukas.common.entity.operation.Patch;
@@ -68,8 +71,14 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
         for (int j = 0; j < revisedArray.length; j++) {
             if (!matchedIndexes.contains(j)) {
                 Class elementType = revisedArray[j] == null ? null : revisedArray[j].getClass();
-                Key<Integer, Object> elementKey = this.getDiff().generateKey(j, elementType, fieldType, null);
-                Element element = this.getDiff().diff(null, revisedArray[j], j, elementType, fieldType, elementKey);
+                Object ob = createNewObjectOfType(elementType);
+
+                if(elementType!=null && elementType.getName().equals("java.util.HashMap$Node")){
+                    ob = new AbstractMap.SimpleEntry(createNewObjectOfType(((Map.Entry)revisedArray[j]).getKey() == null ? null :((Map.Entry)revisedArray[j]).getKey().getClass()), createNewObjectOfType(((Map.Entry)revisedArray[j]).getValue() == null ? null :((Map.Entry)revisedArray[j]).getValue().getClass()));
+                }
+
+                Key<Integer, Object> elementKey = this.getDiff().generateKey(j, elementType, fieldType, this.getDiff().registerNewToOriginalElement(ob, revisedArray[j]));
+                Element element = this.getDiff().diff(this.getDiff().registerNewToOriginalElement(ob, revisedArray[j]), revisedArray[j], j, elementType, fieldType, elementKey);
                 element.setStatus(Element.Status.ADDED);
                 elements.add(element);
             }
@@ -139,10 +148,26 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                 //collection is ordered so we can process it as usual
                 insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(originalArray[(Integer) childElement.getKey().getName()], childElement));
             } else if (childElement.getStatus() == Element.Status.ADDED) {
-                if(childElement.getKey() instanceof CircularLeafKey){
-                    int ss = 3;
+
+                Object ob = (T) createNewObjectOfType(childElement.getKey().getType());
+
+                try {
+                    ob = childElement.getKey().makeChild();
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
-                insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(childElement.getKey() instanceof CircularLeafKey ? (T) createNewObjectOfType(childElement.getKey().getType()) : null, childElement));
+
+                if(childElement.getKey() instanceof LeafKey){
+                    ob = ((LeafKey)(childElement.getKey())).getValue() == null ? (T) createNewObjectOfType(childElement.getKey().getType()) : ((LeafKey)(childElement.getKey())).getValue();
+                }
+
+                if(childElement.getKey() instanceof MapEntryNodeKey){
+                    ob = new AbstractMap.SimpleEntry(createNewObjectOfType(((MapEntryNodeKey) childElement.getKey()).getKeyKey().getType()), createNewObjectOfType(((MapEntryNodeKey) childElement.getKey()).getKeyValue().getType()));
+                }
+
+                insert(newArray, (Integer) childElement.getName(), this.getPatch().patch(ob, childElement));
             }
         }
 
@@ -186,7 +211,15 @@ public class ArrayEntityGeneration<T> extends EntityGeneration<T> {
                 }
                 throw new RuntimeException("Cannot even find it if threaten as unordered");
             } else if (childElement.getStatus() == Element.Status.ADDED) {
-                newCollection.add(this.getPatch().patch(null, childElement));
+
+                Object ob = (T) createNewObjectOfType(childElement.getKey().getType());
+
+                if(childElement.getKey() instanceof MapEntryNodeKey){
+                    ob = new AbstractMap.SimpleEntry(createNewObjectOfType(((MapEntryNodeKey) childElement.getKey()).getKeyKey().getType()), createNewObjectOfType(((MapEntryNodeKey) childElement.getKey()).getKeyValue().getType()));
+                }
+
+
+                newCollection.add(this.getPatch().patch(ob, childElement));
             }
         }
 

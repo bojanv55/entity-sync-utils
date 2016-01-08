@@ -40,4 +40,6 @@ public abstract class Key<N, V> {
     }
 
     public abstract boolean match(V value);
+
+    public abstract <T> T makeChild() throws NoSuchFieldException, IllegalAccessException;
 }

@@ -22,4 +22,9 @@ public class LeafKey<N, V> extends Key<N, V> {
     public boolean match(V value) {
         return this.value == value || this.value != null && (this.value.equals(value) || this.value.equals(Name.CIRCULAR_REFERENCE));
     }
+
+    @Override
+    public <T> T makeChild() throws NoSuchFieldException, IllegalAccessException {
+        return (T) this.value;
+    }
 }

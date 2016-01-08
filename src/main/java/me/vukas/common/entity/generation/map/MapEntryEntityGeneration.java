@@ -1,5 +1,6 @@
 package me.vukas.common.entity.generation.map;
 
+import me.vukas.common.base.Objects;
 import me.vukas.common.entity.EntityGeneration;
 import me.vukas.common.entity.element.Element;
 import me.vukas.common.entity.generation.map.element.MapEntryNodeElement;
@@ -12,13 +13,19 @@ import java.util.Map;
 public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
     @Override
     public <N> Element<N, Map.Entry> diff(Map.Entry original, Map.Entry revised, N elementName, Class fieldType, Class containerType, Key<N, Map.Entry> key) {
-        Class revisedKeyClass = revised.getKey() == null ? null : revised.getKey().getClass();
-        Key keyKey = this.getDiff().generateKey(elementName, revisedKeyClass, fieldType, original == null ? null : original.getKey());
-        Element keyElement = this.getDiff().diff(original == null ? null : this.getDiff().getRevisedIfCircularReference(original.getKey()), revised.getKey(), elementName, revisedKeyClass, fieldType, keyKey);
 
+        Class revisedKeyClass = revised.getKey() == null ? null : revised.getKey().getClass();
         Class revisedValueClass = revised.getValue() == null ? null : revised.getValue().getClass();
+
+//        if(original.getKey()==null){
+//            original = new AbstractMap.SimpleEntry(Objects.createNewObjectOfType(revisedKeyClass), Objects.createNewObjectOfType(revisedKeyClass));
+//        }
+
+        Key keyKey = this.getDiff().generateKey(elementName, revisedKeyClass, fieldType, original == null ? null : original.getKey());
+        Element keyElement = this.getDiff().diff(original.getKey() == null ? this.getDiff().registerNewToOriginalElement(Objects.createNewObjectOfType(revisedKeyClass), revised.getKey()) : this.getDiff().getRevisedIfCircularReference(original.getKey()), revised.getKey(), elementName, revisedKeyClass, fieldType, keyKey);
+
         Key valueKey = this.getDiff().generateKey(elementName, revisedValueClass, fieldType, original == null ? null : original.getValue());
-        Element valueElement = this.getDiff().diff(original == null ? null : this.getDiff().getRevisedIfCircularReference(original.getValue()), revised.getValue(), elementName, revisedValueClass, fieldType, valueKey);
+        Element valueElement = this.getDiff().diff(original.getValue() == null ? this.getDiff().registerNewToOriginalElement(Objects.createNewObjectOfType(revisedValueClass), revised.getValue()) : this.getDiff().getRevisedIfCircularReference(original.getValue()), revised.getValue(), elementName, revisedValueClass, fieldType, valueKey);
 
         Element.Status status = Element.Status.EQUAL;
         if (keyElement.getStatus() != Element.Status.EQUAL || valueElement.getStatus() != Element.Status.EQUAL) {
@@ -41,8 +48,8 @@ public class MapEntryEntityGeneration extends EntityGeneration<Map.Entry> {
     @Override
     public <N> Map.Entry patch(Map.Entry original, Element<N, Map.Entry> diff) {
         return new AbstractMap.SimpleEntry(
-                this.getPatch().patch(original == null ? null : original.getKey(), ((MapEntryNodeElement) diff).getElementKey()),
-                this.getPatch().patch(original == null ? null : original.getValue(), ((MapEntryNodeElement) diff).getElementValue())
+                this.getPatch().patch(original.getKey() == null ? Objects.createNewObjectOfType(((MapEntryNodeElement) diff).getElementKey().getKey().getType()) : original.getKey(), ((MapEntryNodeElement) diff).getElementKey()),
+                this.getPatch().patch(original.getValue() == null ? Objects.createNewObjectOfType(((MapEntryNodeElement) diff).getElementValue().getKey().getType()) : original.getValue(), ((MapEntryNodeElement) diff).getElementValue())
         );
     }
 
